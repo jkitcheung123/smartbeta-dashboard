@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>价值类因子 SmartBeta 指数对比看板</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#1a1a2e;color:#e0e0e0;padding:12px 16px}
+h1{font-size:18px;font-weight:700;color:#fff;margin-bottom:2px}
+.sub{font-size:11px;color:#888;margin-bottom:10px}
+.tabs{display:flex;gap:0;border-bottom:2px solid #0abde3;margin-bottom:0;overflow-x:auto}
+.tab-btn{padding:7px 13px;font-size:11.5px;font-weight:600;color:#888;background:#16213e;border:none;cursor:pointer;border-radius:7px 7px 0 0;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.tab-btn:hover{color:#fff;background:#1a2744}
+.tab-btn.active{color:#0abde3;background:#1a1a2e;border-bottom:2px solid #0abde3;margin-bottom:-2px}
+.tab-content{display:block}
+.tab-content[hidden]{display:none}
+.comp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.comp-table th{background:#1a2744;color:#aaa;font-weight:500;padding:7px 6px;text-align:center;position:sticky;top:0;font-size:11px}
+.comp-table td{padding:6px 6px;border-bottom:1px solid #2a2a4a;vertical-align:middle}
+.comp-table tr:hover{background:rgba(10,189,227,0.05)}
+.comp-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.idx-name{font-weight:600;color:#fff;font-size:12px}
+.idx-code{font-size:10px;color:#888;margin-top:1px}
+.positive{color:#ee5a24;font-weight:500} .drop{color:#27ae60;font-weight:500} .neutral{color:#aaa}
+.rise{color:#ee5a24;font-weight:500}
+.btn-detail{background:#0abde3;color:#fff;border:none;padding:4px 10px;border-radius:3px;font-size:11px;cursor:pointer;transition:background .15s}
+.btn-detail:hover{background:#0abde3dd}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.kpi{background:#16213e;border-radius:6px;padding:10px;text-align:center}
+.kpi .lbl{font-size:10px;color:#888;margin-bottom:1px}
+.kpi .val{font-size:18px;font-weight:700;color:#fff}
+.kpi .val.rise{color:#ee5a24}
+.kpi .val.cyan{color:#0abde3}
+.kpi .val.drop{color:#27ae60}
+.kpi .val.amber{color:#ff9f43}
+.kpi .val2{font-size:9px;color:#888;margin-top:1px}
+.section{background:#16213e;border-radius:8px;padding:14px 16px;margin:12px 0}
+.section h3{font-size:13px;font-weight:600;color:#fff;margin-bottom:8px}
+.section p{font-size:12px;line-height:1.8;color:#ccc}
+.section strong{color:#ff9f43}
+table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
+th{background:#1a2744;color:#bbb;font-weight:500;padding:6px 7px;text-align:left;font-size:11px}
+td{padding:6px 7px;border-bottom:1px solid #2a2a4a;color:#ccc}
+tr:last-child td{border-bottom:none}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.dd{color:#27ae60;font-weight:500}
+.above{color:#ee5a24;font-weight:500} .below{color:#27ae60;font-weight:500}
+.sigma-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.sigma-item{border-radius:5px;padding:8px 10px;display:flex;flex-direction:column}
+.sigma-item .s-label{font-size:10px;color:#888}
+.sigma-item .s-price{font-size:14px;font-weight:600;color:#fff}
+.sigma-item .s-pct{font-size:10px;font-weight:500}
+.sigma-item.cyan-bg{background:rgba(10,189,227,0.12);border:1px solid rgba(10,189,227,0.25)}
+.sigma-item.cyan-bg .s-pct{color:#0abde3}
+.sigma-item.neutral-bg{background:#1a2744;border:1px solid #2a2a4a}
+.sigma-item.neutral-bg .s-pct{color:#888}
+.sigma-item.rise-bg{background:rgba(238,90,36,0.12);border:1px solid rgba(238,90,36,0.25)}
+.sigma-item.rise-bg .s-pct{color:#ee5a24}
+.sigma-item.drop-light-bg{background:rgba(46,204,113,0.10);border:1px solid rgba(46,204,113,0.20)}
+.sigma-item.drop-light-bg .s-pct{color:#2ecc71}
+.sigma-item.drop-bg{background:rgba(39,174,96,0.12);border:1px solid rgba(39,174,96,0.25)}
+.sigma-item.drop-bg .s-pct{color:#27ae60}
+.sigma-item.drop-deep-bg{background:rgba(30,132,73,0.15);border:1px solid rgba(30,132,73,0.28)}
+.sigma-item.drop-deep-bg .s-pct{color:#1e8449}
+.extremes{display:flex;gap:10px;margin-top:10px}
+.extreme{flex:1;padding:8px 10px;border-radius:5px;font-size:11px;background:#1a2744;border:1px solid #2a2a4a}
+.extreme .ev-lbl{font-size:10px;color:#888}
+.extreme .ev-val{font-size:15px;font-weight:700;margin-top:1px}
+.chart-wrap{width:100%;height:420px;margin-top:8px;border-radius:6px;overflow:hidden}
+.chart-wrap canvas{width:100%!important;display:block}
+.sig-chart{width:100%;height:180px;margin-top:8px;border-radius:6px;overflow:hidden}
+.sig-chart canvas{width:100%!important;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0;font-size:11px;color:#aaa}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:1px}
+.note{font-size:10px;color:#888;margin:4px 0 0}
+.footer{font-size:10px;color:#666;margin-top:16px;text-align:center;line-height:1.5}
+@media(max-width:640px){.kpi-row{grid-template-columns:1fr 1fr}.sigma-grid{grid-template-columns:1fr 1fr}.extremes{flex-direction:column}}
+</style>
+</head>
+<body>
+<h1>价值类因子 SmartBeta 指数对比看板</h1>
+<p class="sub">全收益口径 · 数据至 2026-06-18 · 编制日期 2026-06-23 · 作者 广州大耶鸠杰克张</p>
+
+<div class="tabs"><button class="tab-btn active" onclick="switchTab(0)">总览对比</button><button class="tab-btn" onclick="switchTab(1)">国证价值100</button><button class="tab-btn" onclick="switchTab(2)">中证自由现金流</button><button class="tab-btn" onclick="switchTab(3)">中证红利质量</button><button class="tab-btn" onclick="switchTab(4)">国证自由现金流</button></div>
+
+<div id="tab-0" class="tab-content">
+  <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:6px">指数对比总览（数据至 2026-06-18）</div>
+  <table class="comp-table"><thead><tr>
+    <th style="text-align:left">指数</th>
+    <th class="num">CAGR<br><span style="font-weight:400;font-size:10px;color:#888">基日以来</span></th>
+    <th class="num">波动率</th>
+    <th class="num">最大回撤</th>
+    <th class="num">动态夏普<br><span style="font-weight:400;font-size:10px;color:#888">基日</span></th>
+    <th class="num">CAGR<br><span style="font-weight:400;font-size:10px;color:#888">过去1年</span></th>
+    <th class="num">当前σ偏离</th>
+    <th class="num">距-1σ空间</th>
+    <th class="num">趋势CAGR</th>
+    <th class="num">R²</th>
+    <th>操作</th>
+  </tr></thead><tbody>
+<tr><td><div class="idx-name">国证价值100全收益</div><div class="idx-code">480081</div></td><td class="num positive">16.44%</td><td class="num">21.99%</td><td class="num drop">-39.94%</td><td class="num positive">0.610<br><span style="font-size:9px;color:#888">(Rf=3.04%)</span></td><td class="num positive">11.94%</td><td class="num neutral">-0.32σ</td><td class="num drop">需跌9.0%</td><td class="num positive">16.18%</td><td class="num" style="color:#0abde3">0.9463</td><td><button class="btn-detail" onclick="switchTab(1)">查看详情</button></td></tr>
+<tr><td><div class="idx-name">中证自由现金流全收益</div><div class="idx-code">932365CNY010</div></td><td class="num positive">14.71%</td><td class="num">22.99%</td><td class="num drop">-44.07%</td><td class="num positive">0.515<br><span style="font-size:9px;color:#888">(Rf=2.87%)</span></td><td class="num positive">15.34%</td><td class="num neutral">-0.04σ</td><td class="num drop">需跌10.9%</td><td class="num positive">15.79%</td><td class="num" style="color:#0abde3">0.9426</td><td><button class="btn-detail" onclick="switchTab(2)">查看详情</button></td></tr>
+<tr><td><div class="idx-name">中证红利质量全收益</div><div class="idx-code">932315CNY010</div></td><td class="num positive">16.02%</td><td class="num">21.63%</td><td class="num drop">-37.64%</td><td class="num positive">0.603<br><span style="font-size:9px;color:#888">(Rf=2.97%)</span></td><td class="num positive">11.24%</td><td class="num drop">-1.43σ</td><td class="num rise">已跌破6.7%</td><td class="num positive">15.40%</td><td class="num" style="color:#ff9f43">0.9226</td><td><button class="btn-detail" onclick="switchTab(3)">查看详情</button></td></tr>
+<tr><td><div class="idx-name">国证自由现金流全收益</div><div class="idx-code">480092</div></td><td class="num positive">16.44%</td><td class="num">22.87%</td><td class="num drop">-50.19%</td><td class="num positive">0.586<br><span style="font-size:9px;color:#888">(Rf=3.04%)</span></td><td class="num positive">13.45%</td><td class="num neutral">-0.22σ</td><td class="num drop">需跌11.6%</td><td class="num positive">17.60%</td><td class="num" style="color:#0abde3">0.9409</td><td><button class="btn-detail" onclick="switchTab(4)">查看详情</button></td></tr>
+  </tbody></table>
+  <p class="note">动态夏普用逐日10年期国债收益率均值作为Rf；距-1σ空间："需跌"=至-1σ下轨还需下跌幅度 · 点击"查看详情"切换至指数详情页</p>
+  <div style="margin-top:12px;font-size:12px;color:#aaa">📂 快速跳转：</div>
+  <div class="kpi-row">
+<div class="kpi" style="cursor:pointer" onclick="switchTab(1)"><div class="lbl">国证价值100全收益<br><span style="font-size:9px;color:#666">480081</span></div><div class="val cyan" style="font-size:13px;margin-top:3px">CAGR 16.44% · 中性</div><div class="val2">点击查看完整看板</div></div>
+<div class="kpi" style="cursor:pointer" onclick="switchTab(2)"><div class="lbl">中证自由现金流全收益<br><span style="font-size:9px;color:#666">932365CNY010</span></div><div class="val cyan" style="font-size:13px;margin-top:3px">CAGR 14.71% · 中性</div><div class="val2">点击查看完整看板</div></div>
+<div class="kpi" style="cursor:pointer" onclick="switchTab(3)"><div class="lbl">中证红利质量全收益<br><span style="font-size:9px;color:#666">932315CNY010</span></div><div class="val cyan" style="font-size:13px;margin-top:3px">CAGR 16.02% · 已跌破-1σ</div><div class="val2">点击查看完整看板</div></div>
+<div class="kpi" style="cursor:pointer" onclick="switchTab(4)"><div class="lbl">国证自由现金流全收益<br><span style="font-size:9px;color:#666">480092</span></div><div class="val cyan" style="font-size:13px;margin-top:3px">CAGR 16.44% · 中性</div><div class="val2">点击查看完整看板</div></div>
+  </div>
+</div>
+
+<div id="tab-1" class="tab-content" hidden>
+<div class="kpi-row">
+  <div class="kpi"><div class="lbl">当前点位</div><div class="val cyan">7749.21</div><div class="val2">2026-06-18</div></div>
+  <div class="kpi"><div class="lbl">当前σ偏离</div><div class="val" id="idx-0-sigma-val">-0.32σ</div><div class="val2">距中轨 +4.56%</div></div>
+  <div class="kpi"><div class="lbl">趋势CAGR</div><div class="val rise">16.18%</div><div class="val2">R²=0.9463 · σ≈14.86%</div></div>
+  <div class="kpi"><div class="lbl">距-1σ下轨</div><div class="val drop">-8.97%</div><div class="val2">目标 7054.03 点</div></div>
+</div>
+
+<div class="section">
+  <h3>多区间风险收益指标</h3>
+  <table><thead><tr><th>区间</th><th>起始日</th><th class="num">CAGR</th><th class="num">波动率</th><th class="num">夏普(Rf=0)</th><th class="num">夏普(Rf=2.5%)</th><th class="num">动态夏普</th><th class="num">最大回撤</th></tr></thead>
+  <tbody id="idx-0-metrics-body"></tbody></table>
+</div>
+
+<div class="section">
+  <h3>σ通道位置与下跌空间</h3>
+  <p style="font-size:11px;color:#aaa;margin-bottom:4px">当前 <strong style="color:#0abde3">7749.21</strong> 点 · 趋势中轨 <strong style="color:#0abde3">8102.24</strong> 点 · 1σ ≈ 14.86% 价格偏差</p>
+  <div class="sigma-grid" id="idx-0-sigma-grid"></div>
+  <div class="extremes">
+    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#ee5a24">+3.54σ</div><div style="font-size:10px;color:#888">2015-06-12</div></div>
+    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#27ae60">-2.26σ</div><div style="font-size:10px;color:#888">2014-03-10</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对数回归通道图</h3>
+  <div class="chart-wrap"><canvas id="mainChart-0"></canvas></div>
+  <div class="legend">
+    <span><i style="background:#ee5a24"></i>全收益收盘</span>
+    <span><i style="background:#0abde3"></i>趋势线(CAGR)</span>
+    <span><i style="background:rgba(10,189,227,0.40)"></i>±1σ通道</span>
+    <span><i style="background:rgba(10,189,227,0.18)"></i>±2σ通道</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>σ偏离度柱状图</h3>
+  <div class="sig-chart"><canvas id="sigChart-0"></canvas></div>
+  <p class="note">正值=高于趋势 | 红=强上升 橙=弱上升 浅红=微升 灰=中性 绿=下跌 深绿=强下降（涨=红 跌=绿）</p>
+</div>
+
+<div class="section" id="idx-0-insight-card">
+  <h3>对数回归分析要点</h3>
+  <p id="idx-0-insight-body"></p>
+</div>
+
+<div class="section">
+  <h3>上升/下降中枢周期识别 (±0.5σ阈值)</h3>
+  <table><thead><tr><th>起始日</th><th>结束日</th><th>持续(天)</th><th>类型</th><th>σ峰/谷</th></tr></thead><tbody><tr><td>2012-12-31</td><td>2014-12-04</td><td>2320</td><td class="below">↓ 下降</td><td>-2.26σ</td></tr>
+<tr><td>2014-12-15</td><td>2015-08-25</td><td>855</td><td class="above">↑ 上升</td><td>3.54σ</td></tr>
+<tr><td>2015-10-16</td><td>2016-01-12</td><td>305</td><td class="above">↑ 上升</td><td>1.37σ</td></tr>
+<tr><td>2016-01-26</td><td>2016-07-12</td><td>555</td><td class="below">↓ 下降</td><td>-0.82σ</td></tr>
+<tr><td>2016-11-11</td><td>2018-10-18</td><td>2355</td><td class="above">↑ 上升</td><td>2.85σ</td></tr>
+<tr><td>2019-02-25</td><td>2019-08-05</td><td>550</td><td class="above">↑ 上升</td><td>1.46σ</td></tr>
+<tr><td>2020-02-03</td><td>2020-07-06</td><td>520</td><td class="below">↓ 下降</td><td>-1.18σ</td></tr>
+<tr><td>2021-01-29</td><td>2021-05-10</td><td>310</td><td class="below">↓ 下降</td><td>-0.7σ</td></tr>
+<tr><td>2021-06-21</td><td>2021-09-06</td><td>275</td><td class="below">↓ 下降</td><td>-0.79σ</td></tr>
+<tr><td>2021-09-06</td><td>2021-11-02</td><td>170</td><td class="above">↑ 上升</td><td>1.12σ</td></tr>
+<tr><td>2021-11-02</td><td>2022-02-08</td><td>320</td><td class="below">↓ 下降</td><td>-0.69σ</td></tr>
+<tr><td>2022-03-15</td><td>2023-05-08</td><td>1385</td><td class="below">↓ 下降</td><td>-1.51σ</td></tr>
+<tr><td>2023-05-24</td><td>2024-05-06</td><td>1140</td><td class="below">↓ 下降</td><td>-1.22σ</td></tr>
+<tr><td>2024-07-08</td><td>2024-09-30</td><td>290</td><td class="below">↓ 下降</td><td>-1.09σ</td></tr>
+<tr><td>2024-09-30</td><td>2025-01-10</td><td>340</td><td class="above">↑ 上升</td><td>0.99σ</td></tr>
+<tr><td>2025-04-07</td><td>2025-07-07</td><td>305</td><td class="below">↓ 下降</td><td>-0.59σ</td></tr>
+<tr><td>2025-11-10</td><td>2026-06-16</td><td>720</td><td class="above">↑ 上升</td><td>0.91σ</td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+  <h3>最新持仓 (Top 20) · 数据日期 2026-05-29</h3>
+  <table><thead><tr><th>#</th><th>代码</th><th>名称</th><th class="num">权重</th></tr></thead><tbody>
+    <tr><td>1</td><td>000333</td><td>美的集团</td><td class="num">9.04%</td></tr>
+    <tr><td>2</td><td>000651</td><td>格力电器</td><td class="num">8.85%</td></tr>
+    <tr><td>3</td><td>600036</td><td>招商银行</td><td class="num">6.84%</td></tr>
+    <tr><td>4</td><td>601225</td><td>陕西煤业</td><td class="num">6.16%</td></tr>
+    <tr><td>5</td><td>000338</td><td>潍柴动力</td><td class="num">4.77%</td></tr>
+    <tr><td>6</td><td>601166</td><td>兴业银行</td><td class="num">4.70%</td></tr>
+    <tr><td>7</td><td>600938</td><td>中国海油</td><td class="num">4.15%</td></tr>
+    <tr><td>8</td><td>601857</td><td>中国石油</td><td class="num">3.16%</td></tr>
+    <tr><td>9</td><td>600096</td><td>云天化</td><td class="num">2.85%</td></tr>
+    <tr><td>10</td><td>000568</td><td>泸州老窖</td><td class="num">2.70%</td></tr>
+    <tr><td>11</td><td>600690</td><td>海尔智家</td><td class="num">2.59%</td></tr>
+    <tr><td>12</td><td>600919</td><td>江苏银行</td><td class="num">2.42%</td></tr>
+    <tr><td>13</td><td>601728</td><td>中国电信</td><td class="num">2.27%</td></tr>
+    <tr><td>14</td><td>601117</td><td>中国化学</td><td class="num">2.08%</td></tr>
+    <tr><td>15</td><td>600741</td><td>华域汽车</td><td class="num">2.01%</td></tr>
+    <tr><td>16</td><td>000001</td><td>平安银行</td><td class="num">1.93%</td></tr>
+    <tr><td>17</td><td>600941</td><td>中国移动</td><td class="num">1.36%</td></tr>
+    <tr><td>18</td><td>601229</td><td>上海银行</td><td class="num">1.36%</td></tr>
+    <tr><td>19</td><td>600050</td><td>中国联通</td><td class="num">1.35%</td></tr>
+    <tr><td>20</td><td>600019</td><td>宝钢股份</td><td class="num">1.13%</td></tr>
+  </tbody></table>
+</div>
+
+</div>
+<div id="tab-2" class="tab-content" hidden>
+<div class="kpi-row">
+  <div class="kpi"><div class="lbl">当前点位</div><div class="val cyan">7953.02</div><div class="val2">2026-06-18</div></div>
+  <div class="kpi"><div class="lbl">当前σ偏离</div><div class="val" id="idx-1-sigma-val">-0.04σ</div><div class="val2">距中轨 +0.45%</div></div>
+  <div class="kpi"><div class="lbl">趋势CAGR</div><div class="val rise">15.79%</div><div class="val2">R²=0.9426 · σ≈12.72%</div></div>
+  <div class="kpi"><div class="lbl">距-1σ下轨</div><div class="val drop">-10.88%</div><div class="val2">目标 7087.64 点</div></div>
+</div>
+
+<div class="section">
+  <h3>多区间风险收益指标</h3>
+  <table><thead><tr><th>区间</th><th>起始日</th><th class="num">CAGR</th><th class="num">波动率</th><th class="num">夏普(Rf=0)</th><th class="num">夏普(Rf=2.5%)</th><th class="num">动态夏普</th><th class="num">最大回撤</th></tr></thead>
+  <tbody id="idx-1-metrics-body"></tbody></table>
+</div>
+
+<div class="section">
+  <h3>σ通道位置与下跌空间</h3>
+  <p style="font-size:11px;color:#aaa;margin-bottom:4px">当前 <strong style="color:#0abde3">7953.02</strong> 点 · 趋势中轨 <strong style="color:#0abde3">7988.91</strong> 点 · 1σ ≈ 12.72% 价格偏差</p>
+  <div class="sigma-grid" id="idx-1-sigma-grid"></div>
+  <div class="extremes">
+    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#ee5a24">+4.11σ</div><div style="font-size:10px;color:#888">2015-06-12</div></div>
+    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#27ae60">-2.4σ</div><div style="font-size:10px;color:#888">2020-03-23</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对数回归通道图</h3>
+  <div class="chart-wrap"><canvas id="mainChart-1"></canvas></div>
+  <div class="legend">
+    <span><i style="background:#ee5a24"></i>全收益收盘</span>
+    <span><i style="background:#0abde3"></i>趋势线(CAGR)</span>
+    <span><i style="background:rgba(10,189,227,0.40)"></i>±1σ通道</span>
+    <span><i style="background:rgba(10,189,227,0.18)"></i>±2σ通道</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>σ偏离度柱状图</h3>
+  <div class="sig-chart"><canvas id="sigChart-1"></canvas></div>
+  <p class="note">正值=高于趋势 | 红=强上升 橙=弱上升 浅红=微升 灰=中性 绿=下跌 深绿=强下降（涨=红 跌=绿）</p>
+</div>
+
+<div class="section" id="idx-1-insight-card">
+  <h3>对数回归分析要点</h3>
+  <p id="idx-1-insight-body"></p>
+</div>
+
+<div class="section">
+  <h3>上升/下降中枢周期识别 (±0.5σ阈值)</h3>
+  <table><thead><tr><th>起始日</th><th>结束日</th><th>持续(天)</th><th>类型</th><th>σ峰/谷</th></tr></thead><tbody><tr><td>2015-01-05</td><td>2015-09-15</td><td>855</td><td class="above">↑ 上升</td><td>4.11σ</td></tr>
+<tr><td>2015-10-12</td><td>2016-01-07</td><td>310</td><td class="above">↑ 上升</td><td>1.18σ</td></tr>
+<tr><td>2016-01-15</td><td>2016-12-01</td><td>1065</td><td class="below">↓ 下降</td><td>-1.51σ</td></tr>
+<tr><td>2016-12-15</td><td>2017-03-21</td><td>310</td><td class="below">↓ 下降</td><td>-0.62σ</td></tr>
+<tr><td>2017-06-21</td><td>2018-07-02</td><td>1260</td><td class="above">↑ 上升</td><td>2.02σ</td></tr>
+<tr><td>2018-10-11</td><td>2019-03-06</td><td>485</td><td class="below">↓ 下降</td><td>-1.62σ</td></tr>
+<tr><td>2019-05-06</td><td>2021-04-29</td><td>2425</td><td class="below">↓ 下降</td><td>-2.4σ</td></tr>
+<tr><td>2021-05-10</td><td>2021-11-05</td><td>605</td><td class="above">↑ 上升</td><td>2.08σ</td></tr>
+<tr><td>2021-12-16</td><td>2022-04-25</td><td>420</td><td class="above">↑ 上升</td><td>0.83σ</td></tr>
+<tr><td>2022-06-08</td><td>2022-08-03</td><td>200</td><td class="above">↑ 上升</td><td>0.57σ</td></tr>
+<tr><td>2022-08-03</td><td>2023-05-08</td><td>910</td><td class="below">↓ 下降</td><td>-1.37σ</td></tr>
+<tr><td>2023-05-22</td><td>2024-02-22</td><td>915</td><td class="below">↓ 下降</td><td>-1.17σ</td></tr>
+<tr><td>2024-03-08</td><td>2024-07-24</td><td>460</td><td class="above">↑ 上升</td><td>1.24σ</td></tr>
+<tr><td>2024-09-26</td><td>2025-03-04</td><td>505</td><td class="above">↑ 上升</td><td>1.65σ</td></tr>
+<tr><td>2025-07-22</td><td>2026-06-18</td><td>1095</td><td class="above">↑ 上升</td><td>2.07σ</td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+  <h3>最新持仓 (Top 20) · 数据日期 2026-05-29</h3>
+  <table><thead><tr><th>#</th><th>代码</th><th>名称</th><th class="num">权重</th></tr></thead><tbody>
+    <tr><td>1</td><td>000651</td><td>格力电器</td><td class="num">9.51%</td></tr>
+    <tr><td>2</td><td>600938</td><td>中国海油</td><td class="num">9.04%</td></tr>
+    <tr><td>3</td><td>601728</td><td>中国电信</td><td class="num">8.80%</td></tr>
+    <tr><td>4</td><td>600104</td><td>上汽集团</td><td class="num">8.03%</td></tr>
+    <tr><td>5</td><td>601919</td><td>中远海控</td><td class="num">4.13%</td></tr>
+    <tr><td>6</td><td>000100</td><td>TCL科技</td><td class="num">3.34%</td></tr>
+    <tr><td>7</td><td>002714</td><td>牧原股份</td><td class="num">3.17%</td></tr>
+    <tr><td>8</td><td>600019</td><td>宝钢股份</td><td class="num">2.96%</td></tr>
+    <tr><td>9</td><td>002415</td><td>海康威视</td><td class="num">2.94%</td></tr>
+    <tr><td>10</td><td>601600</td><td>中国铝业</td><td class="num">2.92%</td></tr>
+    <tr><td>11</td><td>601633</td><td>长城汽车</td><td class="num">2.88%</td></tr>
+    <tr><td>12</td><td>002352</td><td>顺丰控股</td><td class="num">2.82%</td></tr>
+    <tr><td>13</td><td>601877</td><td>正泰电器</td><td class="num">2.34%</td></tr>
+    <tr><td>14</td><td>000568</td><td>泸州老窖</td><td class="num">1.93%</td></tr>
+    <tr><td>15</td><td>000708</td><td>中信特钢</td><td class="num">1.84%</td></tr>
+    <tr><td>16</td><td>600415</td><td>小商品城</td><td class="num">1.70%</td></tr>
+    <tr><td>17</td><td>600482</td><td>中国动力</td><td class="num">1.67%</td></tr>
+    <tr><td>18</td><td>000039</td><td>中集集团</td><td class="num">1.66%</td></tr>
+    <tr><td>19</td><td>600057</td><td>厦门象屿</td><td class="num">1.31%</td></tr>
+    <tr><td>20</td><td>002648</td><td>卫星化学</td><td class="num">1.21%</td></tr>
+  </tbody></table>
+</div>
+
+</div>
+<div id="tab-3" class="tab-content" hidden>
+<div class="kpi-row">
+  <div class="kpi"><div class="lbl">当前点位</div><div class="val cyan">6366.87</div><div class="val2">2026-06-18</div></div>
+  <div class="kpi"><div class="lbl">当前σ偏离</div><div class="val" id="idx-2-sigma-val">-1.43σ</div><div class="val2">距中轨 +23.81%</div></div>
+  <div class="kpi"><div class="lbl">趋势CAGR</div><div class="val rise">15.40%</div><div class="val2">R²=0.9226 · σ≈16.09%</div></div>
+  <div class="kpi"><div class="lbl">距-1σ下轨</div><div class="val drop">6.65%</div><div class="val2">目标 6790.36 点</div></div>
+</div>
+
+<div class="section">
+  <h3>多区间风险收益指标</h3>
+  <table><thead><tr><th>区间</th><th>起始日</th><th class="num">CAGR</th><th class="num">波动率</th><th class="num">夏普(Rf=0)</th><th class="num">夏普(Rf=2.5%)</th><th class="num">动态夏普</th><th class="num">最大回撤</th></tr></thead>
+  <tbody id="idx-2-metrics-body"></tbody></table>
+</div>
+
+<div class="section">
+  <h3>σ通道位置与下跌空间</h3>
+  <p style="font-size:11px;color:#aaa;margin-bottom:4px">当前 <strong style="color:#0abde3">6366.87</strong> 点 · 趋势中轨 <strong style="color:#0abde3">7882.87</strong> 点 · 1σ ≈ 16.09% 价格偏差</p>
+  <div class="sigma-grid" id="idx-2-sigma-grid"></div>
+  <div class="extremes">
+    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#ee5a24">+2.4σ</div><div style="font-size:10px;color:#888">2015-06-12</div></div>
+    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#27ae60">-2.54σ</div><div style="font-size:10px;color:#888">2014-05-19</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对数回归通道图</h3>
+  <div class="chart-wrap"><canvas id="mainChart-2"></canvas></div>
+  <div class="legend">
+    <span><i style="background:#ee5a24"></i>全收益收盘</span>
+    <span><i style="background:#0abde3"></i>趋势线(CAGR)</span>
+    <span><i style="background:rgba(10,189,227,0.40)"></i>±1σ通道</span>
+    <span><i style="background:rgba(10,189,227,0.18)"></i>±2σ通道</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>σ偏离度柱状图</h3>
+  <div class="sig-chart"><canvas id="sigChart-2"></canvas></div>
+  <p class="note">正值=高于趋势 | 红=强上升 橙=弱上升 浅红=微升 灰=中性 绿=下跌 深绿=强下降（涨=红 跌=绿）</p>
+</div>
+
+<div class="section" id="idx-2-insight-card">
+  <h3>对数回归分析要点</h3>
+  <p id="idx-2-insight-body"></p>
+</div>
+
+<div class="section">
+  <h3>上升/下降中枢周期识别 (±0.5σ阈值)</h3>
+  <table><thead><tr><th>起始日</th><th>结束日</th><th>持续(天)</th><th>类型</th><th>σ峰/谷</th></tr></thead><tbody><tr><td>2013-12-31</td><td>2015-03-16</td><td>1455</td><td class="below">↓ 下降</td><td>-2.53σ</td></tr>
+<tr><td>2015-03-27</td><td>2015-08-24</td><td>515</td><td class="above">↑ 上升</td><td>2.4σ</td></tr>
+<tr><td>2015-08-25</td><td>2015-12-01</td><td>315</td><td class="below">↓ 下降</td><td>-0.74σ</td></tr>
+<tr><td>2016-01-07</td><td>2016-11-25</td><td>1075</td><td class="below">↓ 下降</td><td>-1.37σ</td></tr>
+<tr><td>2017-06-08</td><td>2018-09-11</td><td>1560</td><td class="above">↑ 上升</td><td>2.06σ</td></tr>
+<tr><td>2018-10-29</td><td>2019-02-25</td><td>390</td><td class="below">↓ 下降</td><td>-0.99σ</td></tr>
+<tr><td>2019-04-04</td><td>2019-08-05</td><td>410</td><td class="above">↑ 上升</td><td>0.65σ</td></tr>
+<tr><td>2020-03-17</td><td>2020-06-16</td><td>305</td><td class="below">↓ 下降</td><td>-0.76σ</td></tr>
+<tr><td>2020-06-17</td><td>2022-10-24</td><td>2845</td><td class="above">↑ 上升</td><td>2.0σ</td></tr>
+<tr><td>2022-10-31</td><td>2023-02-01</td><td>305</td><td class="below">↓ 下降</td><td>-0.65σ</td></tr>
+<tr><td>2023-06-26</td><td>2024-10-08</td><td>1550</td><td class="below">↓ 下降</td><td>-1.64σ</td></tr>
+<tr><td>2024-10-15</td><td>2026-01-26</td><td>1570</td><td class="below">↓ 下降</td><td>-1.56σ</td></tr>
+<tr><td>2026-03-23</td><td>2026-06-18</td><td>295</td><td class="below">↓ 下降</td><td>-1.43σ</td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+  <h3>最新持仓 (Top 20) · 数据日期 2026-05-29</h3>
+  <table><thead><tr><th>#</th><th>代码</th><th>名称</th><th class="num">权重</th></tr></thead><tbody>
+    <tr><td>1</td><td>600519</td><td>贵州茅台</td><td class="num">9.36%</td></tr>
+    <tr><td>2</td><td>601088</td><td>中国神华</td><td class="num">7.44%</td></tr>
+    <tr><td>3</td><td>002555</td><td>三七互娱</td><td class="num">7.16%</td></tr>
+    <tr><td>4</td><td>000975</td><td>山金国际</td><td class="num">6.75%</td></tr>
+    <tr><td>5</td><td>000333</td><td>美的集团</td><td class="num">6.01%</td></tr>
+    <tr><td>6</td><td>601958</td><td>金钼股份</td><td class="num">5.06%</td></tr>
+    <tr><td>7</td><td>300628</td><td>亿联网络</td><td class="num">4.38%</td></tr>
+    <tr><td>8</td><td>601601</td><td>中国太保</td><td class="num">4.38%</td></tr>
+    <tr><td>9</td><td>000423</td><td>东阿阿胶</td><td class="num">3.99%</td></tr>
+    <tr><td>10</td><td>000895</td><td>双汇发展</td><td class="num">3.79%</td></tr>
+    <tr><td>11</td><td>603259</td><td>药明康德</td><td class="num">3.69%</td></tr>
+    <tr><td>12</td><td>600938</td><td>中国海油</td><td class="num">3.53%</td></tr>
+    <tr><td>13</td><td>600660</td><td>福耀玻璃</td><td class="num">3.51%</td></tr>
+    <tr><td>14</td><td>600873</td><td>梅花生物</td><td class="num">3.50%</td></tr>
+    <tr><td>15</td><td>000807</td><td>云铝股份</td><td class="num">3.46%</td></tr>
+    <tr><td>16</td><td>601717</td><td>中创智领</td><td class="num">2.30%</td></tr>
+    <tr><td>17</td><td>600096</td><td>云天化</td><td class="num">2.11%</td></tr>
+    <tr><td>18</td><td>002532</td><td>天山铝业</td><td class="num">1.72%</td></tr>
+    <tr><td>19</td><td>002690</td><td>美亚光电</td><td class="num">1.33%</td></tr>
+    <tr><td>20</td><td>603816</td><td>顾家家居</td><td class="num">1.33%</td></tr>
+  </tbody></table>
+</div>
+
+</div>
+<div id="tab-4" class="tab-content" hidden>
+<div class="kpi-row">
+  <div class="kpi"><div class="lbl">当前点位</div><div class="val cyan">7723.02</div><div class="val2">2026-06-18</div></div>
+  <div class="kpi"><div class="lbl">当前σ偏离</div><div class="val" id="idx-3-sigma-val">-0.22σ</div><div class="val2">距中轨 +3.52%</div></div>
+  <div class="kpi"><div class="lbl">趋势CAGR</div><div class="val rise">17.60%</div><div class="val2">R²=0.9409 · σ≈17.07%</div></div>
+  <div class="kpi"><div class="lbl">距-1σ下轨</div><div class="val drop">-11.57%</div><div class="val2">目标 6829.55 点</div></div>
+</div>
+
+<div class="section">
+  <h3>多区间风险收益指标</h3>
+  <table><thead><tr><th>区间</th><th>起始日</th><th class="num">CAGR</th><th class="num">波动率</th><th class="num">夏普(Rf=0)</th><th class="num">夏普(Rf=2.5%)</th><th class="num">动态夏普</th><th class="num">最大回撤</th></tr></thead>
+  <tbody id="idx-3-metrics-body"></tbody></table>
+</div>
+
+<div class="section">
+  <h3>σ通道位置与下跌空间</h3>
+  <p style="font-size:11px;color:#aaa;margin-bottom:4px">当前 <strong style="color:#0abde3">7723.02</strong> 点 · 趋势中轨 <strong style="color:#0abde3">7995.23</strong> 点 · 1σ ≈ 17.07% 价格偏差</p>
+  <div class="sigma-grid" id="idx-3-sigma-grid"></div>
+  <div class="extremes">
+    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#ee5a24">+4.39σ</div><div style="font-size:10px;color:#888">2015-06-12</div></div>
+    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#27ae60">-2.6σ</div><div style="font-size:10px;color:#888">2020-03-23</div></div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>对数回归通道图</h3>
+  <div class="chart-wrap"><canvas id="mainChart-3"></canvas></div>
+  <div class="legend">
+    <span><i style="background:#ee5a24"></i>全收益收盘</span>
+    <span><i style="background:#0abde3"></i>趋势线(CAGR)</span>
+    <span><i style="background:rgba(10,189,227,0.40)"></i>±1σ通道</span>
+    <span><i style="background:rgba(10,189,227,0.18)"></i>±2σ通道</span>
+  </div>
+</div>
+
+<div class="section">
+  <h3>σ偏离度柱状图</h3>
+  <div class="sig-chart"><canvas id="sigChart-3"></canvas></div>
+  <p class="note">正值=高于趋势 | 红=强上升 橙=弱上升 浅红=微升 灰=中性 绿=下跌 深绿=强下降（涨=红 跌=绿）</p>
+</div>
+
+<div class="section" id="idx-3-insight-card">
+  <h3>对数回归分析要点</h3>
+  <p id="idx-3-insight-body"></p>
+</div>
+
+<div class="section">
+  <h3>上升/下降中枢周期识别 (±0.5σ阈值)</h3>
+  <table><thead><tr><th>起始日</th><th>结束日</th><th>持续(天)</th><th>类型</th><th>σ峰/谷</th></tr></thead><tbody><tr><td>2012-12-31</td><td>2013-04-26</td><td>370</td><td class="above">↑ 上升</td><td>0.97σ</td></tr>
+<tr><td>2013-06-20</td><td>2014-11-03</td><td>1670</td><td class="below">↓ 下降</td><td>-1.28σ</td></tr>
+<tr><td>2014-12-02</td><td>2016-01-15</td><td>1375</td><td class="above">↑ 上升</td><td>4.39σ</td></tr>
+<tr><td>2016-01-28</td><td>2016-08-15</td><td>665</td><td class="below">↓ 下降</td><td>-0.68σ</td></tr>
+<tr><td>2017-06-08</td><td>2018-06-27</td><td>1290</td><td class="above">↑ 上升</td><td>1.32σ</td></tr>
+<tr><td>2018-09-17</td><td>2019-04-03</td><td>645</td><td class="below">↓ 下降</td><td>-1.33σ</td></tr>
+<tr><td>2019-05-06</td><td>2021-08-13</td><td>2785</td><td class="below">↓ 下降</td><td>-2.6σ</td></tr>
+<tr><td>2021-08-30</td><td>2021-12-02</td><td>305</td><td class="above">↑ 上升</td><td>1.38σ</td></tr>
+<tr><td>2022-03-15</td><td>2022-06-14</td><td>295</td><td class="below">↓ 下降</td><td>-0.6σ</td></tr>
+<tr><td>2022-06-14</td><td>2022-09-16</td><td>335</td><td class="above">↑ 上升</td><td>0.5σ</td></tr>
+<tr><td>2022-10-25</td><td>2023-02-21</td><td>395</td><td class="below">↓ 下降</td><td>-0.8σ</td></tr>
+<tr><td>2023-04-18</td><td>2023-08-21</td><td>420</td><td class="above">↑ 上升</td><td>0.69σ</td></tr>
+<tr><td>2024-02-19</td><td>2024-09-06</td><td>690</td><td class="above">↑ 上升</td><td>1.16σ</td></tr>
+<tr><td>2024-09-26</td><td>2025-04-07</td><td>620</td><td class="above">↑ 上升</td><td>1.23σ</td></tr>
+<tr><td>2025-08-20</td><td>2026-06-10</td><td>960</td><td class="above">↑ 上升</td><td>1.45σ</td></tr>
+</tbody></table>
+</div>
+
+<div class="section">
+  <h3>最新持仓 (Top 20) · 数据日期 2026-05-29</h3>
+  <table><thead><tr><th>#</th><th>代码</th><th>名称</th><th class="num">权重</th></tr></thead><tbody>
+    <tr><td>1</td><td>000651</td><td>格力电器</td><td class="num">10.62%</td></tr>
+    <tr><td>2</td><td>600938</td><td>中国海油</td><td class="num">9.00%</td></tr>
+    <tr><td>3</td><td>600104</td><td>上汽集团</td><td class="num">8.97%</td></tr>
+    <tr><td>4</td><td>601919</td><td>中远海控</td><td class="num">4.61%</td></tr>
+    <tr><td>5</td><td>000338</td><td>潍柴动力</td><td class="num">4.51%</td></tr>
+    <tr><td>6</td><td>600019</td><td>宝钢股份</td><td class="num">3.30%</td></tr>
+    <tr><td>7</td><td>601600</td><td>中国铝业</td><td class="num">3.26%</td></tr>
+    <tr><td>8</td><td>601633</td><td>长城汽车</td><td class="num">3.19%</td></tr>
+    <tr><td>9</td><td>600050</td><td>中国联通</td><td class="num">3.11%</td></tr>
+    <tr><td>10</td><td>601877</td><td>正泰电器</td><td class="num">2.61%</td></tr>
+    <tr><td>11</td><td>600170</td><td>上海建工</td><td class="num">2.25%</td></tr>
+    <tr><td>12</td><td>000708</td><td>中信特钢</td><td class="num">2.05%</td></tr>
+    <tr><td>13</td><td>601727</td><td>上海电气</td><td class="num">2.01%</td></tr>
+    <tr><td>14</td><td>600482</td><td>中国动力</td><td class="num">1.89%</td></tr>
+    <tr><td>15</td><td>000039</td><td>中集集团</td><td class="num">1.86%</td></tr>
+    <tr><td>16</td><td>600057</td><td>厦门象屿</td><td class="num">1.46%</td></tr>
+    <tr><td>17</td><td>000792</td><td>盐湖股份</td><td class="num">1.45%</td></tr>
+    <tr><td>18</td><td>002648</td><td>卫星化学</td><td class="num">1.35%</td></tr>
+    <tr><td>19</td><td>600585</td><td>海螺水泥</td><td class="num">1.35%</td></tr>
+    <tr><td>20</td><td>600352</td><td>浙江龙盛</td><td class="num">1.30%</td></tr>
+  </tbody></table>
+</div>
+
+</div>
+
+
+<div class="footer">
+  数据来源: AKShare · 回归方法: log(close) vs day_num 线性回归 · 动态Rf: 10年期国债收益率均值 · 估值日期 2026-06-18<br>
+  编制日期: 2026-06-23 · 作者: 广州大耶鸠杰克张 · 涨=红 跌=绿（中国市场惯例） · WorkBuddy
+</div>
+
+<script>
+// 多指数数据数组
+var DS = [{"data":{"meta":{"code":"480081","name":"国证价值100全收益","base_date":"2012-12-31","source":"cni","latest_date":"2026-06-18"},"metrics":[{"period":"基日以来","start":"2013-01-04","end":"2026-06-18","days":3266,"cagr":16.44,"vol":21.99,"max_dd":-39.94,"max_dd_date":"2016-01-28","sharpe_Rf=0":0.747,"sharpe_Rf=2.5%":0.634,"sharpe_dynamic":0.61,"rf_mean":3.04},{"period":"过去10年","start":"2016-06-20","end":"2026-06-18","days":2428,"cagr":16.16,"vol":18.95,"max_dd":-27.49,"max_dd_date":"2019-01-03","sharpe_Rf=0":0.853,"sharpe_Rf=2.5%":0.721,"sharpe_dynamic":0.704,"rf_mean":2.82},{"period":"过去5年","start":"2021-06-21","end":"2026-06-18","days":1211,"cagr":16.81,"vol":18.86,"max_dd":-20.37,"max_dd_date":"2021-11-10","sharpe_Rf=0":0.892,"sharpe_Rf=2.5%":0.759,"sharpe_dynamic":0.766,"rf_mean":2.37},{"period":"过去3年","start":"2023-06-19","end":"2026-06-18","days":726,"cagr":17.44,"vol":16.92,"max_dd":-13.47,"max_dd_date":"2025-04-07","sharpe_Rf=0":1.031,"sharpe_Rf=2.5%":0.883,"sharpe_dynamic":0.908,"rf_mean":2.07},{"period":"过去1年","start":"2025-06-18","end":"2026-06-18","days":244,"cagr":11.94,"vol":12.76,"max_dd":-12.17,"max_dd_date":"2026-06-18","sharpe_Rf=0":0.935,"sharpe_Rf=2.5%":0.739,"sharpe_dynamic":0.796,"rf_mean":1.79}],"regression":{"cagr_trend":16.18,"r_squared":0.9463,"std_log":0.1385,"std_pct":14.86,"current_sigma":-0.32,"current_close":7749.21,"current_trend":8102.24,"latest_date":"2026-06-18","base_date":"2013-01-04","sigma_bands":{"0":{"sigma":0,"price":8102.24,"drop_pct":4.56},"-0.5":{"sigma":-0.5,"price":7559.99,"drop_pct":-2.44},"-1":{"sigma":-1,"price":7054.03,"drop_pct":-8.97},"-1.5":{"sigma":-1.5,"price":6581.93,"drop_pct":-15.06},"-2":{"sigma":-2,"price":6141.43,"drop_pct":-20.75}},"max_sigma":3.54,"max_sigma_date":"2015-06-12","min_sigma":-2.26,"min_sigma_date":"2014-03-10"},"chart_data":{"dates":["2013-01-04","2013-02-01","2013-03-08","2013-04-09","2013-05-10","2013-06-07","2013-07-10","2013-08-07","2013-09-04","2013-10-11","2013-11-08","2013-12-06","2014-01-06","2014-02-10","2014-03-10","2014-04-08","2014-05-08","2014-06-06","2014-07-04","2014-08-01","2014-08-29","2014-09-29","2014-11-03","2014-12-01","2014-12-29","2015-01-28","2015-03-04","2015-04-01","2015-04-30","2015-05-29","2015-06-29","2015-07-27","2015-08-24","2015-09-23","2015-10-28","2015-11-25","2015-12-23","2016-01-21","2016-02-25","2016-03-24","2016-04-22","2016-05-23","2016-06-22","2016-07-20","2016-08-17","2016-09-14","2016-10-21","2016-11-18","2016-12-16","2017-01-16","2017-02-20","2017-03-20","2017-04-19","2017-05-18","2017-06-19","2017-07-17","2017-08-14","2017-09-11","2017-10-16","2017-11-13","2017-12-11","2018-01-09","2018-02-06","2018-03-13","2018-04-12","2018-05-14","2018-06-11","2018-07-10","2018-08-07","2018-09-04","2018-10-10","2018-11-07","2018-12-05","2019-01-04","2019-02-01","2019-03-08","2019-04-08","2019-05-09","2019-06-06","2019-07-05","2019-08-02","2019-08-30","2019-09-30","2019-11-04","2019-12-02","2019-12-30","2020-02-05","2020-03-04","2020-04-01","2020-04-30","2020-06-02","2020-07-02","2020-07-30","2020-08-27","2020-09-24","2020-10-30","2020-11-27","2020-12-25","2021-01-25","2021-03-01","2021-03-29","2021-04-27","2021-05-28","2021-06-28","2021-07-26","2021-08-23","2021-09-22","2021-10-27","2021-11-24","2021-12-22","2022-01-20","2022-02-24","2022-03-24","2022-04-25","2022-05-26","2022-06-24","2022-07-22","2022-08-19","2022-09-19","2022-10-24","2022-11-21","2022-12-19","2023-01-17","2023-02-21","2023-03-21","2023-04-19","2023-05-22","2023-06-19","2023-07-19","2023-08-16","2023-09-13","2023-10-19","2023-11-16","2023-12-14","2024-01-12","2024-02-19","2024-03-18","2024-04-17","2024-05-20","2024-06-18","2024-07-16","2024-08-13","2024-09-10","2024-10-17","2024-11-14","2024-12-12","2025-01-10","2025-02-17","2025-03-17","2025-04-15","2025-05-16","2025-06-16","2025-07-14","2025-08-11","2025-09-08","2025-10-14","2025-11-11","2025-12-09","2026-01-08","2026-02-05","2026-03-13","2026-04-13","2026-05-14","2026-06-11"],"close":[1000.69,1063.43,1011.7,976.42,987.36,958.19,886.42,915.68,959.02,1020.13,975.17,1058.39,965.35,1006.27,940.18,1025.96,987.34,1001.72,1036.26,1140.16,1154.9,1203.6,1245.13,1365.14,1633.13,1736.64,1714.21,1962.18,2281.73,2251.19,2181.91,1912.9,1630.51,1633.87,1747.59,1849.97,2031.8,1619.09,1557.51,1715.91,1725.19,1695.2,1747.78,1842.54,1957.83,1891.55,1987.46,2062.04,2073.55,2085.78,2228.15,2236.99,2329.26,2324.18,2516.58,2656.55,2644.14,2703.91,2786.42,2958.67,2946.21,3237.42,3332.25,3159.21,2996.1,3043.63,3034.76,2854.57,2832.61,2778.12,2758.48,2649.06,2621.53,2516.96,2729.93,2938.69,3364.51,2899.21,2871.59,3091.58,2948.54,2882.12,2910.45,2974.98,2990.29,3243.81,2887.59,3192.16,2827.71,2941.18,2942.64,3138.62,3334.93,3423.77,3338.64,3336.2,3687.2,3447.8,3449.21,3648.92,3681.87,3654.09,3681.08,3657.98,3621.24,3748.26,4468.73,3911.2,3811.64,4057.82,4269.99,4186.12,4101.26,3977.42,4216.84,4200.6,4086.97,4163.42,4215.86,4013.32,4055.02,4177.36,4356.84,4606.48,4589.53,4929.52,4893.64,4785.77,4950.56,4939.21,5023.16,4849.77,4772.52,4812.03,4903.37,5405.94,5502.3,5789.8,6072.37,5818.27,5651.69,5514.97,5366.58,6454.29,6553.8,6731.21,6483.0,6537.73,6702.24,6537.42,6764.68,6903.47,7209.69,7248.48,7367.12,7329.43,7937.49,7675.39,7913.94,8247.07,8770.52,8378.92,8337.49,8104.06],"trend":[1078.08,1090.54,1106.32,1120.95,1135.31,1148.43,1164.1,1177.56,1191.17,1209.4,1223.39,1237.53,1253.38,1271.52,1286.22,1301.62,1317.75,1333.54,1348.95,1364.55,1380.33,1398.01,1418.24,1434.63,1451.22,1469.2,1490.47,1507.7,1525.76,1544.03,1563.81,1581.89,1600.17,1620.0,1643.45,1662.45,1681.67,1701.81,1726.44,1746.4,1767.32,1789.95,1812.13,1833.08,1854.28,1875.72,1904.42,1926.44,1948.71,1973.67,2002.24,2025.39,2050.49,2075.04,2102.48,2126.79,2151.38,2176.25,2207.75,2233.27,2259.09,2286.15,2312.58,2346.05,2375.12,2406.53,2434.35,2463.51,2491.99,2520.8,2558.33,2587.91,2617.83,2650.27,2680.91,2719.71,2754.54,2789.82,2822.08,2855.88,2888.89,2922.29,2959.72,3002.56,3037.27,3072.39,3119.41,3155.48,3191.96,3230.19,3274.25,3314.82,3353.14,3391.91,3431.13,3482.21,3522.47,3563.2,3608.83,3661.06,3703.39,3747.74,3795.74,3844.36,3888.81,3933.77,3982.51,4040.15,4086.86,4134.11,4183.62,4244.17,4293.24,4350.01,4405.73,4458.49,4510.04,4562.18,4620.61,4687.48,4741.68,4796.5,4853.94,4924.19,4981.12,5040.78,5109.54,5168.61,5232.66,5293.16,5354.35,5434.07,5496.9,5560.45,5627.04,5715.52,5781.6,5853.24,5933.08,6004.14,6073.55,6143.77,6214.8,6309.93,6382.88,6456.67,6534.0,6636.73,6713.46,6793.87,6880.88,6969.01,7049.58,7131.09,7213.53,7320.93,7405.57,7491.19,7584.02,7671.71,7785.93,7885.65,7986.65,8078.99],"upper_1s":[1238.27,1252.59,1270.72,1287.52,1304.01,1319.09,1337.08,1352.54,1368.18,1389.12,1405.18,1421.42,1439.63,1460.46,1477.35,1495.04,1513.57,1531.7,1549.41,1567.32,1585.44,1605.75,1628.98,1647.82,1666.87,1687.53,1711.95,1731.74,1752.48,1773.47,1796.18,1816.95,1837.96,1860.73,1887.66,1909.49,1931.56,1954.7,1982.99,2005.91,2029.94,2055.94,2081.41,2105.48,2129.82,2154.44,2187.42,2212.71,2238.29,2266.96,2299.77,2326.35,2355.18,2383.39,2414.91,2442.83,2471.07,2499.64,2535.81,2565.13,2594.79,2625.86,2656.22,2694.67,2728.06,2764.13,2796.09,2829.58,2862.29,2895.38,2938.49,2972.47,3006.83,3044.09,3079.29,3123.85,3163.86,3204.38,3241.43,3280.25,3318.18,3356.54,3399.53,3448.73,3488.6,3528.93,3582.95,3624.37,3666.27,3710.18,3760.79,3807.39,3851.41,3895.94,3940.98,3999.66,4045.9,4092.68,4145.1,4205.09,4253.7,4304.65,4359.78,4415.62,4466.67,4518.31,4574.31,4640.51,4694.16,4748.43,4805.3,4874.84,4931.2,4996.41,5060.41,5121.01,5180.22,5240.11,5307.22,5384.03,5446.28,5509.24,5575.23,5655.91,5721.3,5789.83,5868.8,5936.65,6010.22,6079.7,6149.99,6241.56,6313.72,6386.72,6463.21,6564.83,6640.73,6723.02,6814.72,6896.34,6976.07,7056.72,7138.31,7247.56,7331.36,7416.12,7504.94,7622.93,7711.07,7803.42,7903.36,8004.59,8097.13,8190.75,8285.44,8408.81,8506.02,8604.36,8710.99,8811.7,8942.9,9057.44,9173.45,9279.5],"lower_1s":[938.6,949.45,963.19,975.93,988.43,999.86,1013.5,1025.21,1037.07,1052.94,1065.11,1077.43,1091.23,1107.02,1119.82,1133.23,1147.27,1161.01,1174.44,1188.01,1201.75,1217.14,1234.76,1249.03,1263.47,1279.13,1297.64,1312.64,1328.37,1344.27,1361.49,1377.23,1393.16,1410.42,1430.83,1447.37,1464.11,1481.64,1503.09,1520.46,1538.67,1558.38,1577.69,1595.93,1614.38,1633.05,1658.04,1677.21,1696.6,1718.33,1743.2,1763.36,1785.21,1806.59,1830.48,1851.64,1873.05,1894.7,1922.13,1944.35,1966.83,1990.38,2013.39,2042.53,2067.84,2095.19,2119.41,2144.8,2169.59,2194.68,2227.35,2253.1,2279.15,2307.4,2334.07,2367.85,2398.18,2428.9,2456.98,2486.4,2515.15,2544.23,2576.81,2614.11,2644.33,2674.9,2715.84,2747.24,2779.0,2812.29,2850.65,2885.97,2919.34,2953.09,2987.23,3031.71,3066.76,3102.21,3141.95,3187.42,3224.27,3262.89,3304.68,3347.0,3385.7,3424.84,3467.28,3517.46,3558.13,3599.27,3642.37,3695.09,3737.81,3787.24,3835.74,3881.68,3926.56,3971.96,4022.83,4081.05,4128.23,4175.96,4225.97,4287.13,4336.7,4388.64,4448.5,4499.93,4555.69,4608.36,4661.64,4731.05,4785.75,4841.08,4899.06,4976.08,5033.61,5095.99,5165.5,5227.37,5287.8,5348.93,5410.78,5493.59,5557.11,5621.35,5688.68,5778.12,5844.92,5914.92,5990.68,6067.41,6137.56,6208.52,6280.3,6373.8,6447.49,6522.03,6602.86,6679.19,6778.64,6865.46,6953.39,7033.78],"upper_2s":[1422.28,1438.72,1459.54,1478.85,1497.79,1515.1,1535.77,1553.52,1571.48,1595.54,1613.98,1632.64,1653.55,1677.49,1696.88,1717.2,1738.48,1759.3,1779.64,1800.22,1821.03,1844.36,1871.05,1892.68,1914.56,1938.29,1966.34,1989.07,2012.89,2037.0,2063.09,2086.94,2111.07,2137.23,2168.16,2193.23,2218.59,2245.16,2277.65,2303.99,2331.58,2361.44,2390.71,2418.35,2446.3,2474.59,2512.46,2541.51,2570.89,2603.82,2641.5,2672.04,2705.16,2737.56,2773.76,2805.82,2838.26,2871.08,2912.63,2946.3,2980.37,3016.06,3050.93,3095.09,3133.44,3174.88,3211.58,3250.05,3287.62,3325.63,3375.15,3414.17,3453.64,3496.44,3536.86,3588.05,3634.0,3680.55,3723.1,3767.69,3811.25,3855.31,3904.69,3961.2,4007.0,4053.33,4115.37,4162.94,4211.07,4261.51,4319.63,4373.16,4423.72,4474.87,4526.6,4594.0,4647.11,4700.84,4761.05,4829.95,4885.79,4944.31,5007.63,5071.77,5130.41,5189.72,5254.04,5330.07,5391.7,5454.03,5519.35,5599.23,5663.97,5738.87,5812.37,5881.98,5949.99,6018.78,6095.86,6184.09,6255.58,6327.9,6403.69,6496.37,6571.48,6650.18,6740.89,6818.82,6903.32,6983.13,7063.87,7169.04,7251.93,7335.77,7423.63,7540.35,7627.52,7722.04,7827.37,7921.12,8012.7,8105.33,8199.04,8324.53,8420.78,8518.13,8620.15,8755.68,8856.91,8962.99,9077.79,9194.05,9300.35,9407.87,9516.64,9658.33,9770.0,9882.95,10005.42,10121.1,10271.79,10403.35,10536.6,10658.42],"lower_2s":[817.17,826.62,838.58,849.67,860.55,870.5,882.38,892.58,902.9,916.72,927.32,938.04,950.05,963.8,974.94,986.62,998.85,1010.81,1022.5,1034.32,1046.28,1059.68,1075.01,1087.44,1100.01,1113.64,1129.76,1142.82,1156.51,1170.36,1185.35,1199.06,1212.92,1227.95,1245.72,1260.12,1274.69,1289.96,1308.63,1323.76,1339.61,1356.77,1373.58,1389.46,1405.53,1421.78,1443.54,1460.23,1477.11,1496.03,1517.68,1535.23,1554.25,1572.87,1593.66,1612.09,1630.73,1649.58,1673.45,1692.8,1712.37,1732.88,1752.92,1778.28,1800.32,1824.13,1845.22,1867.32,1888.91,1910.74,1939.19,1961.61,1984.29,2008.88,2032.11,2061.52,2087.92,2114.66,2139.11,2164.73,2189.76,2215.07,2243.44,2275.91,2302.23,2328.84,2364.49,2391.82,2419.48,2448.45,2481.85,2512.61,2541.65,2571.04,2600.76,2639.49,2670.0,2700.87,2735.46,2775.05,2807.14,2840.76,2877.14,2913.99,2947.68,2981.76,3018.71,3062.4,3097.8,3133.62,3171.15,3217.04,3254.24,3297.27,3339.5,3379.5,3418.57,3458.09,3502.38,3553.07,3594.15,3635.7,3679.25,3732.5,3775.65,3820.87,3872.98,3917.76,3966.31,4012.17,4058.55,4118.98,4166.6,4214.77,4265.25,4332.31,4382.4,4436.71,4497.22,4551.09,4603.7,4656.93,4710.77,4782.87,4838.17,4894.1,4952.72,5030.59,5088.75,5149.69,5215.65,5282.45,5343.52,5405.3,5467.79,5549.2,5613.36,5678.26,5748.63,5815.09,5901.67,5977.26,6053.81,6123.8],"sigma_dev":[-0.538,-0.182,-0.645,-0.996,-1.008,-1.307,-1.967,-1.816,-1.565,-1.228,-1.637,-1.129,-1.885,-1.689,-2.262,-1.718,-2.084,-2.065,-1.903,-1.297,-1.287,-1.081,-0.94,-0.358,0.852,1.207,1.01,1.902,2.905,2.722,2.404,1.371,0.136,0.062,0.443,0.771,1.365,-0.36,-0.743,-0.127,-0.174,-0.393,-0.261,0.037,0.392,0.061,0.308,0.491,0.448,0.399,0.772,0.717,0.92,0.818,1.298,1.605,1.489,1.567,1.68,2.03,1.917,2.511,2.637,2.148,1.676,1.695,1.591,1.063,0.925,0.702,0.544,0.169,0.01,-0.373,0.131,0.559,1.444,0.278,0.126,0.572,0.148,-0.1,-0.121,-0.067,-0.113,0.392,-0.557,0.083,-0.875,-0.677,-0.771,-0.394,-0.039,0.067,-0.197,-0.309,0.33,-0.238,-0.327,-0.024,-0.042,-0.183,-0.221,-0.359,-0.515,-0.349,0.831,-0.234,-0.503,-0.134,0.147,-0.099,-0.33,-0.646,-0.316,-0.43,-0.711,-0.66,-0.662,-1.121,-1.129,-0.998,-0.78,-0.481,-0.591,-0.161,-0.312,-0.555,-0.4,-0.5,-0.461,-0.821,-1.02,-1.043,-0.994,-0.402,-0.357,-0.079,0.167,-0.227,-0.52,-0.779,-1.059,0.163,0.191,0.301,-0.057,-0.108,-0.012,-0.278,-0.123,-0.068,0.162,0.118,0.152,0.008,0.501,0.175,0.307,0.522,0.86,0.438,0.31,0.022]}}},{"data":{"meta":{"code":"932365CNY010","name":"中证自由现金流全收益","base_date":"2014-12-31","source":"csi","latest_date":"2026-06-18"},"metrics":[{"period":"基日以来","start":"2015-01-05","end":"2026-06-18","days":2783,"cagr":14.71,"vol":22.99,"max_dd":-44.07,"max_dd_date":"2016-01-28","sharpe_Rf=0":0.64,"sharpe_Rf=2.5%":0.531,"sharpe_dynamic":0.515,"rf_mean":2.87},{"period":"过去10年","start":"2016-06-20","end":"2026-06-18","days":2428,"cagr":17.2,"vol":19.77,"max_dd":-26.08,"max_dd_date":"2019-01-03","sharpe_Rf=0":0.87,"sharpe_Rf=2.5%":0.743,"sharpe_dynamic":0.727,"rf_mean":2.82},{"period":"过去5年","start":"2021-06-21","end":"2026-06-18","days":1211,"cagr":14.58,"vol":20.37,"max_dd":-21.89,"max_dd_date":"2022-10-31","sharpe_Rf=0":0.716,"sharpe_Rf=2.5%":0.593,"sharpe_dynamic":0.599,"rf_mean":2.37},{"period":"过去3年","start":"2023-06-19","end":"2026-06-18","days":726,"cagr":19.47,"vol":18.67,"max_dd":-19.2,"max_dd_date":"2026-06-18","sharpe_Rf=0":1.043,"sharpe_Rf=2.5%":0.909,"sharpe_dynamic":0.932,"rf_mean":2.07},{"period":"过去1年","start":"2025-06-18","end":"2026-06-18","days":244,"cagr":15.34,"vol":15.34,"max_dd":-19.2,"max_dd_date":"2026-06-18","sharpe_Rf=0":1.0,"sharpe_Rf=2.5%":0.837,"sharpe_dynamic":0.883,"rf_mean":1.79}],"regression":{"cagr_trend":15.79,"r_squared":0.9426,"std_log":0.1197,"std_pct":12.72,"current_sigma":-0.04,"current_close":7953.02,"current_trend":7988.91,"latest_date":"2026-06-18","base_date":"2015-01-05","sigma_bands":{"0":{"sigma":0,"price":7988.91,"drop_pct":0.45},"-0.5":{"sigma":-0.5,"price":7524.8,"drop_pct":-5.38},"-1":{"sigma":-1,"price":7087.64,"drop_pct":-10.88},"-1.5":{"sigma":-1.5,"price":6675.89,"drop_pct":-16.06},"-2":{"sigma":-2,"price":6288.05,"drop_pct":-20.94}},"max_sigma":4.11,"max_sigma_date":"2015-06-12","min_sigma":-2.4,"min_sigma_date":"2020-03-23"},"chart_data":{"dates":["2015-01-05","2015-02-02","2015-03-09","2015-04-07","2015-05-06","2015-06-03","2015-07-02","2015-07-30","2015-08-27","2015-09-28","2015-11-02","2015-11-30","2015-12-28","2016-01-26","2016-03-01","2016-03-29","2016-04-27","2016-05-26","2016-06-27","2016-07-25","2016-08-22","2016-09-21","2016-10-26","2016-11-23","2016-12-21","2017-01-19","2017-02-23","2017-03-23","2017-04-24","2017-05-23","2017-06-22","2017-07-20","2017-08-17","2017-09-14","2017-10-19","2017-11-16","2017-12-14","2018-01-12","2018-02-09","2018-03-16","2018-04-17","2018-05-17","2018-06-14","2018-07-13","2018-08-10","2018-09-07","2018-10-15","2018-11-12","2018-12-10","2019-01-09","2019-02-13","2019-03-13","2019-04-11","2019-05-14","2019-06-12","2019-07-10","2019-08-07","2019-09-04","2019-10-10","2019-11-07","2019-12-05","2020-01-03","2020-02-10","2020-03-09","2020-04-07","2020-05-08","2020-06-05","2020-07-07","2020-08-04","2020-09-01","2020-09-29","2020-11-04","2020-12-02","2020-12-30","2021-01-28","2021-03-04","2021-04-01","2021-04-30","2021-06-02","2021-07-01","2021-07-29","2021-08-26","2021-09-27","2021-11-01","2021-11-29","2021-12-27","2022-01-25","2022-03-01","2022-03-29","2022-04-28","2022-05-31","2022-06-29","2022-07-27","2022-08-24","2022-09-22","2022-10-27","2022-11-24","2022-12-22","2023-01-20","2023-02-24","2023-03-24","2023-04-24","2023-05-25","2023-06-26","2023-07-24","2023-08-21","2023-09-18","2023-10-24","2023-11-21","2023-12-19","2024-01-17","2024-02-22","2024-03-21","2024-04-22","2024-05-23","2024-06-21","2024-07-19","2024-08-16","2024-09-13","2024-10-22","2024-11-19","2024-12-17","2025-01-15","2025-02-20","2025-03-20","2025-04-18","2025-05-21","2025-06-19","2025-07-17","2025-08-14","2025-09-11","2025-10-17","2025-11-14","2025-12-12","2026-01-13","2026-02-10","2026-03-18","2026-04-16","2026-05-19","2026-06-16"],"close":[1652.37,1512.12,1564.57,1911.39,2074.33,2403.64,2193.52,2040.58,1722.94,1665.21,1777.26,1791.46,1878.71,1511.41,1502.12,1603.95,1612.09,1586.23,1637.64,1751.15,1796.58,1775.64,1843.57,1898.52,1879.09,1922.02,2029.02,2091.16,2086.4,2140.43,2268.74,2380.45,2378.96,2432.99,2506.03,2654.5,2595.47,2825.52,2610.78,2724.22,2508.09,2657.57,2684.21,2509.0,2617.29,2520.88,2416.99,2433.34,2334.45,2289.07,2493.47,2660.75,2841.72,2566.5,2629.33,2627.8,2449.86,2634.23,2591.75,2587.24,2552.92,2831.89,2587.56,2649.93,2542.29,2591.97,2601.05,2872.4,3009.12,3052.46,2941.37,3057.65,3293.13,3178.92,3144.19,3381.58,3587.97,3757.91,3890.9,4103.21,3932.87,4350.65,4608.47,4195.4,4104.04,4373.26,4217.05,4551.78,4542.33,4254.28,4550.78,4589.88,4406.91,4544.61,4516.02,4163.6,4289.19,4241.57,4513.83,4590.83,4558.62,4769.71,4617.59,4539.72,4749.68,4591.38,5051.19,4858.93,4919.01,4966.98,5177.72,5805.03,6027.31,6302.83,6628.23,6572.2,6304.05,6073.26,5765.04,7135.3,7050.71,7201.41,6897.81,6716.98,6897.96,6682.13,7024.19,6824.65,7158.36,7528.4,7937.89,8005.72,8631.57,8378.29,8803.88,9165.01,9485.92,9190.92,8853.28,8065.65],"trend":[1491.26,1508.11,1529.44,1547.35,1565.46,1583.16,1601.69,1619.79,1638.1,1659.27,1682.74,1701.76,1720.99,1741.14,1765.77,1785.72,1806.63,1827.78,1851.41,1872.33,1893.49,1916.42,1943.53,1965.5,1987.71,2010.98,2039.43,2062.48,2089.14,2113.59,2139.2,2163.37,2187.82,2212.55,2243.84,2269.2,2294.85,2321.71,2347.95,2381.17,2411.95,2441.16,2468.75,2497.65,2525.88,2554.42,2593.68,2622.99,2652.63,2684.77,2722.74,2753.51,2785.75,2822.89,2855.94,2888.21,2920.85,2953.86,2996.85,3030.72,3064.97,3100.85,3148.51,3184.09,3221.36,3261.69,3298.56,3341.19,3378.95,3417.14,3455.76,3506.05,3545.67,3585.74,3627.72,3679.04,3720.61,3764.17,3814.36,3859.01,3902.62,3946.73,3997.74,4054.3,4100.12,4146.45,4194.99,4254.34,4302.42,4354.53,4412.59,4464.25,4514.7,4565.72,4619.17,4684.52,4737.46,4790.99,4847.08,4915.65,4971.2,5033.44,5096.46,5162.33,5220.67,5279.67,5339.34,5417.04,5478.26,5540.17,5605.03,5686.6,5750.87,5825.21,5898.13,5967.18,6034.62,6102.82,6171.79,6269.15,6340.0,6411.65,6486.71,6581.11,6655.49,6733.4,6823.18,6903.06,6981.07,7059.96,7139.75,7243.66,7325.52,7408.3,7504.06,7588.87,7699.31,7789.45,7893.3,7982.5],"upper_1s":[1680.89,1699.88,1723.93,1744.11,1764.53,1784.47,1805.36,1825.76,1846.4,1870.26,1896.72,1918.16,1939.83,1962.54,1990.31,2012.8,2036.36,2060.2,2086.83,2110.42,2134.27,2160.12,2190.68,2215.43,2240.47,2266.7,2298.77,2324.74,2354.79,2382.36,2411.22,2438.47,2466.03,2493.89,2529.17,2557.76,2586.66,2616.94,2646.52,2683.96,2718.65,2751.58,2782.68,2815.25,2847.07,2879.24,2923.49,2956.53,2989.94,3026.16,3068.97,3103.65,3139.99,3181.85,3219.1,3255.48,3292.27,3329.48,3377.93,3416.11,3454.71,3495.16,3548.87,3588.98,3631.0,3676.45,3718.0,3766.06,3808.62,3851.66,3895.19,3951.88,3996.54,4041.71,4089.02,4146.87,4193.73,4242.83,4299.4,4349.73,4398.89,4448.6,4506.1,4569.84,4621.49,4673.72,4728.43,4795.32,4849.51,4908.26,4973.7,5031.93,5088.79,5146.3,5206.55,5280.2,5339.87,5400.22,5463.44,5540.73,5603.35,5673.5,5744.53,5818.78,5884.54,5951.04,6018.29,6105.88,6174.88,6244.67,6317.77,6409.72,6482.16,6565.94,6648.15,6725.98,6801.99,6878.86,6956.6,7066.34,7146.2,7226.96,7311.56,7417.97,7501.8,7589.63,7690.82,7780.85,7868.79,7957.71,8047.64,8164.76,8257.04,8350.35,8458.29,8553.87,8678.36,8779.96,8897.02,8997.57],"lower_1s":[1323.02,1337.97,1356.9,1372.78,1388.86,1404.55,1420.99,1437.05,1453.29,1472.08,1492.9,1509.77,1526.84,1544.71,1566.56,1584.27,1602.81,1621.58,1642.54,1661.1,1679.87,1700.22,1724.27,1743.76,1763.47,1784.11,1809.35,1829.8,1853.45,1875.15,1897.86,1919.31,1941.0,1962.94,1990.71,2013.2,2035.95,2059.79,2083.07,2112.53,2139.84,2165.76,2190.24,2215.88,2240.92,2266.25,2301.07,2327.08,2353.38,2381.88,2415.58,2442.88,2471.48,2504.43,2533.75,2562.38,2591.34,2620.62,2658.76,2688.81,2719.2,2751.03,2793.31,2824.88,2857.95,2893.73,2926.43,2964.26,2997.75,3031.63,3065.89,3110.51,3145.67,3181.21,3218.46,3263.99,3300.87,3339.52,3384.04,3423.66,3462.35,3501.48,3546.74,3596.91,3637.56,3678.67,3721.74,3774.38,3817.04,3863.28,3914.78,3960.61,4005.37,4050.64,4098.06,4156.03,4203.0,4250.5,4300.26,4361.09,4410.38,4465.59,4521.5,4579.94,4631.7,4684.05,4736.98,4805.92,4860.23,4915.16,4972.7,5045.07,5102.08,5168.03,5232.74,5294.0,5353.82,5414.33,5475.52,5561.9,5624.75,5688.32,5754.91,5838.66,5904.65,5973.77,6053.42,6124.29,6193.5,6263.49,6334.28,6426.46,6499.09,6572.54,6657.49,6732.73,6830.71,6910.68,7002.82,7081.96],"upper_2s":[1894.63,1916.04,1943.14,1965.89,1988.91,2011.39,2034.93,2057.93,2081.19,2108.09,2137.91,2162.07,2186.5,2212.1,2243.39,2268.75,2295.31,2322.18,2352.2,2378.78,2405.66,2434.8,2469.24,2497.15,2525.37,2554.93,2591.08,2620.36,2654.23,2685.3,2717.83,2748.55,2779.61,2811.02,2850.79,2883.0,2915.58,2949.72,2983.05,3025.25,3064.36,3101.47,3136.52,3173.24,3209.11,3245.37,3295.25,3332.49,3370.15,3410.97,3459.22,3498.32,3539.27,3586.46,3628.45,3669.45,3710.92,3752.86,3807.48,3850.5,3894.02,3939.61,4000.15,4045.36,4092.72,4143.96,4190.79,4244.96,4292.93,4341.44,4390.51,4454.4,4504.74,4555.65,4608.99,4674.19,4727.01,4782.35,4846.11,4902.84,4958.25,5014.28,5079.1,5150.95,5209.16,5268.03,5329.7,5405.1,5466.18,5532.4,5606.16,5671.79,5735.89,5800.71,5868.62,5951.64,6018.9,6086.92,6158.18,6245.29,6315.87,6394.94,6475.0,6558.7,6632.82,6707.78,6783.58,6882.31,6960.09,7038.74,7121.15,7224.78,7306.43,7400.87,7493.53,7581.26,7666.93,7753.58,7841.2,7964.9,8054.91,8145.94,8241.31,8361.25,8455.74,8554.73,8668.79,8770.27,8869.39,8969.62,9070.99,9203.0,9307.01,9412.19,9533.85,9641.59,9781.91,9896.43,10028.37,10141.7],"lower_2s":[1173.76,1187.03,1203.82,1217.91,1232.17,1246.1,1260.68,1274.93,1289.34,1306.01,1324.48,1339.45,1354.59,1370.44,1389.83,1405.54,1421.99,1438.64,1457.24,1473.7,1490.36,1508.41,1529.75,1547.04,1564.52,1582.84,1605.23,1623.37,1644.35,1663.6,1683.76,1702.78,1722.03,1741.49,1766.12,1786.08,1806.27,1827.41,1848.07,1874.21,1898.43,1921.43,1943.15,1965.89,1988.11,2010.58,2041.48,2064.55,2087.88,2113.17,2143.06,2167.28,2192.66,2221.89,2247.9,2273.31,2299.0,2324.98,2358.81,2385.47,2412.43,2440.67,2478.18,2506.19,2535.53,2567.27,2596.28,2629.84,2659.56,2689.62,2720.01,2759.6,2790.79,2822.33,2855.37,2895.76,2928.48,2962.77,3002.27,3037.42,3071.74,3106.46,3146.61,3191.13,3227.19,3263.66,3301.87,3348.58,3386.42,3427.44,3473.14,3513.8,3553.51,3593.66,3635.74,3687.17,3728.84,3770.98,3815.12,3869.09,3912.82,3961.81,4011.41,4063.26,4109.18,4155.61,4202.58,4263.74,4311.92,4360.65,4411.7,4475.91,4526.49,4585.0,4642.4,4696.75,4749.83,4803.51,4857.79,4934.43,4990.19,5046.59,5105.67,5179.97,5238.51,5299.84,5370.5,5433.38,5494.78,5556.88,5619.67,5701.46,5765.89,5831.05,5906.43,5973.17,6060.1,6131.05,6212.79,6283.01],"sigma_dev":[0.857,0.022,0.19,1.765,2.351,3.488,2.627,1.929,0.422,0.03,0.457,0.429,0.733,-1.182,-1.351,-0.897,-0.952,-1.184,-1.025,-0.559,-0.439,-0.637,-0.441,-0.29,-0.469,-0.378,-0.043,0.115,-0.011,0.105,0.491,0.799,0.7,0.793,0.923,1.31,1.028,1.641,0.886,1.124,0.327,0.71,0.699,0.038,0.297,-0.11,-0.589,-0.627,-1.067,-1.332,-0.735,-0.286,0.166,-0.795,-0.691,-0.789,-1.469,-0.957,-1.213,-1.322,-1.527,-0.758,-1.639,-1.534,-1.978,-1.92,-1.985,-1.263,-0.968,-0.943,-1.346,-1.143,-0.617,-1.006,-1.195,-0.704,-0.303,-0.014,0.166,0.513,0.064,0.814,1.188,0.286,0.008,0.445,0.044,0.565,0.453,-0.195,0.258,0.232,-0.202,-0.039,-0.189,-0.985,-0.83,-1.018,-0.595,-0.571,-0.724,-0.45,-0.824,-1.074,-0.79,-1.167,-0.463,-0.908,-0.9,-0.912,-0.662,0.172,0.392,0.658,0.975,0.807,0.365,-0.041,-0.57,1.081,0.888,0.97,0.513,0.171,0.299,-0.064,0.243,-0.095,0.21,0.537,0.885,0.836,1.371,1.028,1.335,1.577,1.743,1.382,0.959,0.087]}}},{"data":{"meta":{"code":"932315CNY010","name":"中证红利质量全收益","base_date":"2013-12-31","source":"csi","latest_date":"2026-06-18"},"metrics":[{"period":"基日以来","start":"2014-01-02","end":"2026-06-18","days":3028,"cagr":16.02,"vol":21.63,"max_dd":-37.64,"max_dd_date":"2016-01-28","sharpe_Rf=0":0.741,"sharpe_Rf=2.5%":0.625,"sharpe_dynamic":0.603,"rf_mean":2.97},{"period":"过去10年","start":"2016-06-20","end":"2026-06-18","days":2428,"cagr":14.0,"vol":18.89,"max_dd":-27.97,"max_dd_date":"2018-10-30","sharpe_Rf=0":0.741,"sharpe_Rf=2.5%":0.609,"sharpe_dynamic":0.592,"rf_mean":2.82},{"period":"过去5年","start":"2021-06-21","end":"2026-06-18","days":1211,"cagr":6.63,"vol":17.97,"max_dd":-18.95,"max_dd_date":"2022-10-31","sharpe_Rf=0":0.369,"sharpe_Rf=2.5%":0.23,"sharpe_dynamic":0.237,"rf_mean":2.37},{"period":"过去3年","start":"2023-06-19","end":"2026-06-18","days":726,"cagr":8.61,"vol":17.47,"max_dd":-17.51,"max_dd_date":"2026-06-18","sharpe_Rf=0":0.493,"sharpe_Rf=2.5%":0.35,"sharpe_dynamic":0.374,"rf_mean":2.07},{"period":"过去1年","start":"2025-06-18","end":"2026-06-18","days":244,"cagr":11.24,"vol":16.03,"max_dd":-17.51,"max_dd_date":"2026-06-18","sharpe_Rf=0":0.701,"sharpe_Rf=2.5%":0.545,"sharpe_dynamic":0.59,"rf_mean":1.79}],"regression":{"cagr_trend":15.4,"r_squared":0.9226,"std_log":0.1492,"std_pct":16.09,"current_sigma":-1.43,"current_close":6366.87,"current_trend":7882.87,"latest_date":"2026-06-18","base_date":"2014-01-02","sigma_bands":{"0":{"sigma":0,"price":7882.87,"drop_pct":23.81},"-0.5":{"sigma":-0.5,"price":7316.25,"drop_pct":14.91},"-1":{"sigma":-1,"price":6790.36,"drop_pct":6.65},"-1.5":{"sigma":-1.5,"price":6302.27,"drop_pct":-1.01},"-2":{"sigma":-2,"price":5849.26,"drop_pct":-8.13}},"max_sigma":2.4,"max_sigma_date":"2015-06-12","min_sigma":-2.54,"min_sigma_date":"2014-05-19"},"chart_data":{"dates":["2014-01-02","2014-01-30","2014-03-06","2014-04-03","2014-05-06","2014-06-04","2014-07-02","2014-07-30","2014-08-27","2014-09-25","2014-10-30","2014-11-27","2014-12-25","2015-01-26","2015-03-02","2015-03-30","2015-04-28","2015-05-27","2015-06-25","2015-07-23","2015-08-20","2015-09-21","2015-10-26","2015-11-23","2015-12-21","2016-01-19","2016-02-23","2016-03-22","2016-04-20","2016-05-19","2016-06-20","2016-07-18","2016-08-15","2016-09-12","2016-10-19","2016-11-16","2016-12-14","2017-01-12","2017-02-16","2017-03-16","2017-04-17","2017-05-16","2017-06-15","2017-07-13","2017-08-10","2017-09-07","2017-10-12","2017-11-09","2017-12-07","2018-01-05","2018-02-02","2018-03-09","2018-04-10","2018-05-10","2018-06-07","2018-07-06","2018-08-03","2018-08-31","2018-10-08","2018-11-05","2018-12-03","2019-01-02","2019-01-30","2019-03-06","2019-04-03","2019-05-07","2019-06-04","2019-07-03","2019-07-31","2019-08-28","2019-09-26","2019-10-31","2019-11-28","2019-12-26","2020-02-03","2020-03-02","2020-03-30","2020-04-28","2020-05-29","2020-06-30","2020-07-28","2020-08-25","2020-09-22","2020-10-28","2020-11-25","2020-12-23","2021-01-21","2021-02-25","2021-03-25","2021-04-23","2021-05-26","2021-06-24","2021-07-22","2021-08-19","2021-09-16","2021-10-25","2021-11-22","2021-12-20","2022-01-18","2022-02-22","2022-03-22","2022-04-21","2022-05-24","2022-06-22","2022-07-20","2022-08-17","2022-09-15","2022-10-20","2022-11-17","2022-12-15","2023-01-13","2023-02-17","2023-03-17","2023-04-17","2023-05-18","2023-06-15","2023-07-17","2023-08-14","2023-09-11","2023-10-17","2023-11-14","2023-12-12","2024-01-10","2024-02-07","2024-03-14","2024-04-15","2024-05-16","2024-06-14","2024-07-12","2024-08-09","2024-09-06","2024-10-15","2024-11-12","2024-12-10","2025-01-08","2025-02-13","2025-03-13","2025-04-11","2025-05-14","2025-06-12","2025-07-10","2025-08-07","2025-09-04","2025-10-10","2025-11-07","2025-12-05","2026-01-06","2026-02-03","2026-03-11","2026-04-09","2026-05-12","2026-06-09"],"close":[1000.26,1001.81,998.61,987.82,979.06,973.14,1018.86,1091.05,1095.74,1152.46,1164.21,1251.01,1414.51,1495.98,1535.28,1748.53,1979.29,2241.25,2129.38,2004.99,1824.59,1587.02,1722.21,1783.48,1873.31,1602.76,1581.91,1637.96,1635.5,1622.32,1718.85,1859.77,1924.61,1861.62,1895.19,1935.59,1941.64,1943.16,2038.54,2120.69,2209.26,2229.15,2352.34,2436.29,2503.47,2528.05,2677.97,2831.89,2736.75,3027.56,3152.28,3069.59,2909.67,2995.34,3124.22,2812.03,2784.56,2730.24,2677.57,2485.92,2501.6,2364.88,2526.33,2854.42,2995.02,2903.38,2855.89,3156.28,3062.95,3077.26,3090.78,3095.52,3130.49,3239.8,2982.36,3288.52,3043.14,3314.06,3419.26,3770.71,4274.98,4504.43,4266.98,4331.88,4403.41,4485.73,4691.4,4728.44,4356.29,4630.63,4761.3,4670.58,4642.81,4519.02,4973.09,4805.71,4745.39,4882.64,4901.45,4949.6,4645.05,4620.56,4747.7,4869.69,5025.99,4975.31,5088.63,4707.63,4596.34,4821.25,4979.95,4958.2,4934.34,5130.02,4941.32,5007.99,4938.95,4920.72,4937.39,4822.54,4706.62,4790.57,4639.21,4976.38,5338.1,5564.64,5616.73,5462.56,5270.0,4997.06,4872.62,5718.76,5823.96,5733.12,5580.17,5575.79,5634.26,5461.01,5739.56,5830.1,5816.84,6067.68,6380.38,6680.56,6739.56,6674.25,7164.32,7360.33,7497.98,7237.87,7079.33,6477.69],"trend":[1324.17,1338.79,1357.28,1372.27,1390.14,1406.03,1421.55,1437.24,1453.11,1469.72,1490.03,1506.48,1523.11,1542.34,1563.65,1580.91,1598.99,1617.27,1635.76,1653.82,1672.07,1693.18,1716.58,1735.53,1754.68,1774.75,1799.27,1819.13,1839.93,1860.97,1884.47,1905.27,1926.3,1947.56,1976.02,1997.83,2019.89,2042.98,2071.21,2094.07,2120.51,2144.76,2170.14,2194.09,2218.31,2242.8,2273.78,2298.88,2324.26,2350.84,2376.79,2409.63,2440.05,2468.92,2496.17,2524.71,2552.58,2580.76,2619.5,2648.41,2677.65,2709.33,2739.23,2777.08,2807.73,2845.41,2876.82,2909.72,2941.84,2974.31,3008.32,3049.89,3083.55,3117.59,3165.63,3200.57,3235.9,3272.9,3312.92,3354.75,3391.78,3429.22,3467.07,3516.35,3555.17,3594.41,3635.51,3685.75,3726.43,3769.04,3818.12,3861.78,3904.41,3947.51,3991.08,4052.58,4097.31,4142.54,4189.91,4247.8,4294.69,4345.5,4402.09,4452.43,4501.57,4551.26,4603.31,4666.91,4718.43,4770.51,4825.06,4891.73,4945.72,5006.2,5067.42,5123.35,5188.04,5245.31,5303.21,5378.59,5437.96,5497.98,5560.85,5622.24,5702.15,5774.14,5844.75,5911.59,5976.84,6042.81,6109.52,6203.65,6272.13,6341.37,6413.88,6505.05,6576.85,6652.06,6738.68,6815.74,6890.97,6967.04,7043.94,7144.07,7222.93,7302.66,7394.86,7476.48,7582.76,7669.47,7769.34,7855.1],"upper_1s":[1537.22,1554.18,1575.66,1593.05,1613.8,1632.25,1650.27,1668.48,1686.9,1706.19,1729.76,1748.86,1768.16,1790.49,1815.22,1835.26,1856.25,1877.47,1898.94,1919.9,1941.1,1965.6,1992.76,2014.76,2037.0,2060.29,2088.76,2111.81,2135.96,2160.39,2187.66,2211.81,2236.23,2260.91,2293.95,2319.27,2344.87,2371.68,2404.45,2430.99,2461.68,2489.83,2519.29,2547.1,2575.22,2603.64,2639.62,2668.75,2698.21,2729.07,2759.19,2797.31,2832.63,2866.15,2897.78,2930.92,2963.27,2995.98,3040.95,3074.52,3108.46,3145.23,3179.95,3223.89,3259.47,3303.22,3339.68,3377.87,3415.15,3452.85,3492.33,3540.59,3579.67,3619.18,3674.95,3715.51,3756.53,3799.48,3845.94,3894.5,3937.49,3980.95,4024.89,4082.11,4127.16,4172.72,4220.44,4278.75,4325.98,4375.45,4432.43,4483.11,4532.6,4582.63,4633.21,4704.6,4756.53,4809.04,4864.03,4931.23,4985.67,5044.65,5110.35,5168.78,5225.84,5283.52,5343.94,5417.78,5477.58,5538.04,5601.37,5678.76,5741.45,5811.66,5882.72,5947.66,6022.75,6089.23,6156.45,6243.96,6312.88,6382.56,6455.55,6526.81,6619.58,6703.15,6785.12,6862.71,6938.46,7015.05,7092.49,7201.77,7281.26,7361.64,7445.82,7551.65,7635.01,7722.32,7822.88,7912.33,7999.67,8087.98,8177.25,8293.49,8385.04,8477.59,8584.62,8679.38,8802.76,8903.42,9019.36,9118.92],"lower_1s":[1140.65,1153.24,1169.17,1182.08,1197.47,1211.17,1224.53,1238.05,1251.72,1266.03,1283.52,1297.69,1312.02,1328.58,1346.94,1361.81,1377.38,1393.13,1409.06,1424.61,1440.34,1458.52,1478.67,1495.0,1511.5,1528.78,1549.9,1567.01,1584.93,1603.05,1623.29,1641.21,1659.33,1677.64,1702.16,1720.95,1739.94,1759.84,1784.16,1803.85,1826.62,1847.51,1869.37,1890.0,1910.87,1931.96,1958.65,1980.27,2002.13,2025.03,2047.38,2075.67,2101.87,2126.74,2150.22,2174.81,2198.81,2223.08,2256.45,2281.36,2306.54,2333.83,2359.59,2392.2,2418.6,2451.06,2478.11,2506.45,2534.12,2562.09,2591.39,2627.19,2656.19,2685.51,2726.89,2756.99,2787.43,2819.3,2853.77,2889.8,2921.7,2953.95,2986.56,3029.01,3062.45,3096.25,3131.66,3174.93,3209.97,3246.68,3288.96,3326.57,3363.29,3400.41,3437.95,3490.92,3529.45,3568.41,3609.22,3659.09,3699.48,3743.25,3791.99,3835.35,3877.69,3920.49,3965.32,4020.11,4064.49,4109.35,4156.34,4213.77,4260.28,4312.38,4365.11,4413.29,4469.01,4518.34,4568.22,4633.15,4684.3,4736.0,4790.16,4843.03,4911.88,4973.89,5034.71,5092.28,5148.49,5205.32,5262.78,5343.87,5402.86,5462.5,5524.96,5603.49,5665.35,5730.13,5804.75,5871.13,5935.93,6001.46,6067.7,6153.95,6221.88,6290.56,6369.98,6440.3,6531.84,6606.53,6692.56,6766.44],"upper_2s":[1784.54,1804.24,1829.17,1849.36,1873.44,1894.86,1915.78,1936.93,1958.31,1980.7,2008.07,2030.23,2052.64,2078.56,2107.28,2130.54,2154.9,2179.54,2204.47,2228.8,2253.4,2281.85,2313.38,2338.92,2364.73,2391.77,2424.82,2451.59,2479.62,2507.97,2539.64,2567.67,2596.01,2624.67,2663.02,2692.42,2722.14,2753.27,2791.31,2822.12,2857.75,2890.43,2924.62,2956.91,2989.55,3022.55,3064.31,3098.13,3132.33,3168.15,3203.12,3247.38,3288.38,3327.28,3364.01,3402.48,3440.04,3478.01,3530.21,3569.18,3608.58,3651.27,3691.58,3742.58,3783.9,3834.67,3877.0,3921.34,3964.62,4008.38,4054.22,4110.24,4155.61,4201.48,4266.21,4313.31,4360.92,4410.78,4464.72,4521.09,4570.99,4621.45,4672.46,4738.88,4791.19,4844.08,4899.47,4967.16,5021.99,5079.42,5145.56,5204.4,5261.85,5319.93,5378.66,5461.53,5521.82,5582.77,5646.61,5724.63,5787.82,5856.3,5932.56,6000.4,6066.63,6133.6,6203.73,6289.45,6358.88,6429.07,6502.58,6592.43,6665.2,6746.7,6829.2,6904.59,6991.76,7068.93,7146.96,7248.55,7328.57,7409.46,7494.19,7576.91,7684.61,7781.63,7876.79,7966.86,8054.8,8143.71,8233.61,8360.47,8452.76,8546.06,8643.78,8766.65,8863.42,8964.77,9081.51,9185.36,9286.75,9389.26,9492.9,9627.84,9734.12,9841.56,9965.82,10075.82,10219.05,10335.9,10470.5,10586.07],"lower_2s":[982.56,993.41,1007.13,1018.25,1031.51,1043.31,1054.82,1066.47,1078.24,1090.57,1105.64,1117.84,1130.18,1144.45,1160.26,1173.07,1186.48,1200.05,1213.77,1227.17,1240.72,1256.38,1273.74,1287.8,1302.01,1316.9,1335.1,1349.84,1365.27,1380.88,1398.32,1413.75,1429.36,1445.14,1466.25,1482.44,1498.8,1515.94,1536.88,1553.85,1573.47,1591.46,1610.29,1628.06,1646.03,1664.2,1687.2,1705.82,1724.65,1744.37,1763.63,1788.0,1810.57,1831.99,1852.21,1873.39,1894.07,1914.98,1943.72,1965.18,1986.87,2010.38,2032.57,2060.66,2083.4,2111.36,2134.67,2159.08,2182.91,2207.0,2232.24,2263.08,2288.06,2313.32,2348.96,2374.89,2401.11,2428.56,2458.26,2489.3,2516.77,2544.56,2572.64,2609.21,2638.01,2667.13,2697.63,2734.9,2765.09,2796.71,2833.13,2865.53,2897.16,2929.14,2961.47,3007.1,3040.3,3073.86,3109.0,3151.96,3186.75,3224.46,3266.45,3303.8,3340.27,3377.14,3415.76,3462.95,3501.18,3539.82,3580.3,3629.77,3669.84,3714.71,3760.14,3801.64,3849.64,3892.13,3935.1,3991.03,4035.09,4079.63,4126.28,4171.82,4231.12,4284.54,4336.94,4386.53,4434.95,4483.9,4533.4,4603.25,4654.06,4705.43,4759.24,4826.89,4880.17,4935.97,5000.25,5057.43,5113.26,5169.7,5226.76,5301.06,5359.57,5418.73,5487.15,5547.72,5626.57,5690.91,5765.02,5828.66],"sigma_dev":[-1.88,-1.944,-2.057,-2.203,-2.35,-2.467,-2.233,-1.847,-1.892,-1.63,-1.654,-1.246,-0.496,-0.205,-0.123,0.675,1.43,2.187,1.768,1.291,0.585,-0.434,0.022,0.183,0.438,-0.683,-0.863,-0.703,-0.789,-0.92,-0.617,-0.162,-0.006,-0.303,-0.28,-0.212,-0.265,-0.336,-0.107,0.085,0.275,0.259,0.54,0.702,0.811,0.803,1.097,1.398,1.095,1.696,1.893,1.623,1.18,1.296,1.504,0.722,0.583,0.377,0.147,-0.424,-0.456,-0.911,-0.542,0.184,0.433,0.135,-0.049,0.545,0.27,0.228,0.181,0.1,0.101,0.258,-0.4,0.182,-0.412,0.084,0.212,0.783,1.551,1.828,1.392,1.398,1.434,1.485,1.709,1.67,1.047,1.38,1.48,1.275,1.161,0.906,1.475,1.143,0.984,1.102,1.051,1.025,0.526,0.411,0.507,0.6,0.739,0.597,0.672,0.058,-0.176,0.071,0.212,0.09,-0.015,0.164,-0.169,-0.153,-0.33,-0.428,-0.479,-0.731,-0.968,-0.923,-1.215,-0.818,-0.442,-0.248,-0.267,-0.53,-0.844,-1.274,-1.516,-0.546,-0.497,-0.676,-0.933,-1.033,-1.037,-1.322,-1.076,-1.047,-1.136,-0.926,-0.663,-0.45,-0.464,-0.603,-0.212,-0.105,-0.075,-0.388,-0.623,-1.292]}}},{"data":{"meta":{"code":"480092","name":"国证自由现金流全收益","base_date":"2012-12-31","source":"cni","latest_date":"2026-06-18"},"metrics":[{"period":"基日以来","start":"2013-01-04","end":"2026-06-18","days":3266,"cagr":16.44,"vol":22.87,"max_dd":-50.19,"max_dd_date":"2016-01-28","sharpe_Rf=0":0.719,"sharpe_Rf=2.5%":0.609,"sharpe_dynamic":0.586,"rf_mean":3.04},{"period":"过去10年","start":"2016-06-20","end":"2026-06-18","days":2428,"cagr":18.1,"vol":19.82,"max_dd":-25.13,"max_dd_date":"2020-03-23","sharpe_Rf=0":0.913,"sharpe_Rf=2.5%":0.787,"sharpe_dynamic":0.771,"rf_mean":2.82},{"period":"过去5年","start":"2021-06-21","end":"2026-06-18","days":1211,"cagr":18.96,"vol":20.77,"max_dd":-22.93,"max_dd_date":"2021-11-16","sharpe_Rf=0":0.913,"sharpe_Rf=2.5%":0.793,"sharpe_dynamic":0.799,"rf_mean":2.37},{"period":"过去3年","start":"2023-06-19","end":"2026-06-18","days":726,"cagr":15.35,"vol":18.39,"max_dd":-19.75,"max_dd_date":"2026-06-18","sharpe_Rf=0":0.835,"sharpe_Rf=2.5%":0.699,"sharpe_dynamic":0.722,"rf_mean":2.07},{"period":"过去1年","start":"2025-06-18","end":"2026-06-18","days":244,"cagr":13.45,"vol":16.08,"max_dd":-19.75,"max_dd_date":"2026-06-18","sharpe_Rf=0":0.836,"sharpe_Rf=2.5%":0.681,"sharpe_dynamic":0.725,"rf_mean":1.79}],"regression":{"cagr_trend":17.6,"r_squared":0.9409,"std_log":0.1576,"std_pct":17.07,"current_sigma":-0.22,"current_close":7723.02,"current_trend":7995.23,"latest_date":"2026-06-18","base_date":"2013-01-04","sigma_bands":{"0":{"sigma":0,"price":7995.23,"drop_pct":3.52},"-0.5":{"sigma":-0.5,"price":7389.44,"drop_pct":-4.32},"-1":{"sigma":-1,"price":6829.55,"drop_pct":-11.57},"-1.5":{"sigma":-1.5,"price":6312.09,"drop_pct":-18.27},"-2":{"sigma":-2,"price":5833.83,"drop_pct":-24.46}},"max_sigma":4.39,"max_sigma_date":"2015-06-12","min_sigma":-2.6,"min_sigma_date":"2020-03-23"},"chart_data":{"dates":["2013-01-04","2013-02-01","2013-03-08","2013-04-09","2013-05-10","2013-06-07","2013-07-10","2013-08-07","2013-09-04","2013-10-11","2013-11-08","2013-12-06","2014-01-06","2014-02-10","2014-03-10","2014-04-08","2014-05-08","2014-06-06","2014-07-04","2014-08-01","2014-08-29","2014-09-29","2014-11-03","2014-12-01","2014-12-29","2015-01-28","2015-03-04","2015-04-01","2015-04-30","2015-05-29","2015-06-29","2015-07-27","2015-08-24","2015-09-23","2015-10-28","2015-11-25","2015-12-23","2016-01-21","2016-02-25","2016-03-24","2016-04-22","2016-05-23","2016-06-22","2016-07-20","2016-08-17","2016-09-14","2016-10-21","2016-11-18","2016-12-16","2017-01-16","2017-02-20","2017-03-20","2017-04-19","2017-05-18","2017-06-19","2017-07-17","2017-08-14","2017-09-11","2017-10-16","2017-11-13","2017-12-11","2018-01-09","2018-02-06","2018-03-13","2018-04-12","2018-05-14","2018-06-11","2018-07-10","2018-08-07","2018-09-04","2018-10-10","2018-11-07","2018-12-05","2019-01-04","2019-02-01","2019-03-08","2019-04-08","2019-05-09","2019-06-06","2019-07-05","2019-08-02","2019-08-30","2019-09-30","2019-11-04","2019-12-02","2019-12-30","2020-02-05","2020-03-04","2020-04-01","2020-04-30","2020-06-02","2020-07-02","2020-07-30","2020-08-27","2020-09-24","2020-10-30","2020-11-27","2020-12-25","2021-01-25","2021-03-01","2021-03-29","2021-04-27","2021-05-28","2021-06-28","2021-07-26","2021-08-23","2021-09-22","2021-10-27","2021-11-24","2021-12-22","2022-01-20","2022-02-24","2022-03-24","2022-04-25","2022-05-26","2022-06-24","2022-07-22","2022-08-19","2022-09-19","2022-10-24","2022-11-21","2022-12-19","2023-01-17","2023-02-21","2023-03-21","2023-04-19","2023-05-22","2023-06-19","2023-07-19","2023-08-16","2023-09-13","2023-10-19","2023-11-16","2023-12-14","2024-01-12","2024-02-19","2024-03-18","2024-04-17","2024-05-20","2024-06-18","2024-07-16","2024-08-13","2024-09-10","2024-10-17","2024-11-14","2024-12-12","2025-01-10","2025-02-17","2025-03-17","2025-04-15","2025-05-16","2025-06-16","2025-07-14","2025-08-11","2025-09-08","2025-10-14","2025-11-11","2025-12-09","2026-01-08","2026-02-05","2026-03-13","2026-04-13","2026-05-14","2026-06-11"],"close":[996.82,1040.09,1023.39,975.91,976.38,946.58,848.35,887.46,946.84,989.01,951.95,1017.68,925.2,947.93,899.93,958.82,923.95,940.12,975.55,1056.91,1088.67,1178.41,1216.4,1316.69,1504.66,1549.02,1599.39,1843.8,2172.53,2249.56,2198.66,1939.93,1759.08,1680.83,1783.98,1854.11,1819.85,1452.8,1363.29,1475.62,1469.78,1446.81,1469.56,1571.99,1651.79,1578.34,1661.28,1719.46,1728.19,1780.48,1857.8,1859.24,1904.27,1887.09,2004.18,2060.18,2122.35,2173.81,2181.12,2317.5,2271.36,2454.75,2460.17,2374.07,2269.59,2323.96,2277.22,2173.87,2231.7,2189.07,2198.14,2100.92,2064.32,1967.67,2089.04,2278.12,2580.34,2182.24,2160.25,2297.69,2190.14,2132.31,2142.53,2139.32,2137.45,2294.64,2020.37,2213.17,1998.55,2052.13,2080.74,2190.74,2365.03,2384.13,2367.05,2416.79,2709.91,2619.12,2678.3,2869.17,2939.41,3086.45,3186.69,3325.75,3437.2,3664.74,4428.3,3759.56,3702.84,3971.55,3962.93,4065.98,4058.92,3826.04,4259.99,4337.41,4291.74,4395.43,4274.09,4096.82,4085.38,4198.21,4284.49,4678.93,4809.86,5154.18,5043.04,5033.37,5230.3,5089.02,5298.31,5208.39,5194.46,5282.86,5437.98,6059.49,6265.26,6734.85,6639.79,6553.46,6549.89,6191.58,5830.66,6728.51,6933.49,7200.54,6696.18,6913.81,6948.47,6541.24,6733.4,6815.0,7135.78,7347.07,7662.0,7875.03,8343.36,8090.01,8454.3,8873.97,9534.46,9033.33,8854.16,7919.91],"trend":[903.05,914.34,928.66,941.94,954.99,966.94,981.21,993.48,1005.9,1022.56,1035.35,1048.3,1062.82,1079.46,1092.96,1107.12,1121.97,1136.5,1150.71,1165.11,1179.68,1196.02,1214.75,1229.94,1245.32,1262.02,1281.78,1297.81,1314.62,1331.66,1350.11,1366.99,1384.09,1402.64,1424.6,1442.42,1460.46,1479.38,1502.55,1521.34,1541.05,1562.4,1583.34,1603.15,1623.2,1643.5,1670.71,1691.61,1712.76,1736.49,1763.68,1785.74,1809.68,1833.13,1859.35,1882.6,1906.15,1929.99,1960.21,1984.72,2009.54,2035.58,2061.04,2093.31,2121.37,2151.72,2178.63,2206.85,2234.45,2262.4,2298.84,2327.59,2356.7,2388.3,2418.17,2456.03,2490.06,2524.56,2556.13,2589.25,2621.63,2654.42,2691.2,2733.33,2767.52,2802.13,2848.53,2884.16,2920.23,2958.06,3001.71,3041.95,3080.0,3118.52,3157.52,3208.38,3248.51,3289.13,3334.71,3386.92,3429.28,3473.71,3521.84,3570.63,3615.29,3660.5,3709.58,3767.66,3814.78,3862.49,3912.53,3973.79,4023.49,4081.05,4137.59,4191.2,4243.62,4296.69,4356.22,4424.43,4479.76,4535.79,4594.56,4666.49,4724.86,4786.07,4856.69,4917.43,4983.36,5045.68,5108.78,5191.08,5256.0,5321.73,5390.68,5482.38,5550.95,5625.36,5708.37,5782.33,5854.64,5927.87,6002.0,6101.39,6177.7,6254.96,6336.0,6443.78,6524.37,6608.9,6700.47,6793.31,6878.27,6964.29,7051.39,7164.98,7254.58,7345.31,7443.78,7536.88,7658.28,7764.39,7871.98,7970.43],"upper_1s":[1057.18,1070.4,1087.16,1102.71,1117.99,1131.98,1148.68,1163.05,1177.59,1197.09,1212.06,1227.22,1244.23,1263.71,1279.51,1296.09,1313.46,1330.48,1347.12,1363.97,1381.03,1400.16,1422.08,1439.87,1457.88,1477.42,1500.55,1519.32,1539.0,1558.94,1580.54,1600.31,1620.33,1642.05,1667.76,1688.61,1709.73,1731.88,1759.0,1781.0,1804.07,1829.07,1853.59,1876.77,1900.24,1924.01,1955.87,1980.33,2005.1,2032.88,2064.71,2090.53,2118.56,2146.01,2176.71,2203.93,2231.49,2259.4,2294.78,2323.48,2352.53,2383.01,2412.82,2450.6,2483.45,2518.98,2550.48,2583.52,2615.83,2648.55,2691.21,2724.87,2758.95,2795.93,2830.9,2875.22,2915.06,2955.45,2992.42,3031.19,3069.09,3107.48,3150.53,3199.86,3239.88,3280.4,3334.72,3376.43,3418.66,3462.95,3514.05,3561.16,3605.69,3650.79,3696.45,3755.99,3802.96,3850.53,3903.88,3965.0,4014.59,4066.6,4122.95,4180.07,4232.35,4285.28,4342.73,4410.73,4465.89,4521.74,4580.33,4652.04,4710.22,4777.61,4843.8,4906.56,4967.92,5030.05,5099.75,5179.6,5244.38,5309.96,5378.76,5462.98,5531.3,5602.96,5685.64,5756.75,5833.92,5906.88,5980.76,6077.1,6153.1,6230.05,6310.77,6418.12,6498.39,6585.51,6682.68,6769.26,6853.92,6939.64,7026.43,7142.78,7232.12,7322.56,7417.43,7543.61,7637.95,7736.91,7844.11,7952.8,8052.26,8152.96,8254.93,8387.9,8492.8,8599.02,8714.29,8823.28,8965.41,9089.63,9215.57,9330.83],"lower_1s":[771.39,781.03,793.26,804.61,815.76,825.96,838.15,848.63,859.25,873.47,884.4,895.46,907.87,922.08,933.61,945.71,958.39,970.8,982.94,995.24,1007.68,1021.65,1037.64,1050.62,1063.76,1078.02,1094.9,1108.59,1122.96,1137.5,1153.27,1167.69,1182.29,1198.14,1216.9,1232.12,1247.53,1263.69,1283.48,1299.53,1316.37,1334.61,1352.5,1369.41,1386.54,1403.88,1427.13,1444.98,1463.05,1483.32,1506.54,1525.39,1545.83,1565.86,1588.26,1608.13,1628.24,1648.6,1674.42,1695.36,1716.56,1738.8,1760.54,1788.11,1812.08,1838.0,1860.99,1885.1,1908.68,1932.55,1963.68,1988.24,2013.1,2040.09,2065.61,2097.95,2127.02,2156.49,2183.46,2211.75,2239.41,2267.41,2298.83,2334.82,2364.02,2393.59,2433.23,2463.66,2494.47,2526.79,2564.07,2598.45,2630.94,2663.85,2697.16,2740.61,2774.88,2809.59,2848.52,2893.12,2929.3,2967.25,3008.37,3050.05,3088.19,3126.82,3168.73,3218.35,3258.6,3299.35,3342.1,3394.43,3436.88,3486.05,3534.35,3580.14,3624.91,3670.25,3721.1,3779.36,3826.63,3874.49,3924.69,3986.14,4035.99,4088.28,4148.61,4200.49,4256.8,4310.04,4363.94,4434.24,4489.69,4545.84,4604.74,4683.07,4741.64,4805.2,4876.11,4939.29,5001.06,5063.6,5126.93,5211.83,5277.01,5343.01,5412.23,5504.3,5573.14,5645.34,5723.56,5802.87,5875.44,5948.92,6023.32,6120.35,6196.89,6274.39,6358.5,6438.03,6541.73,6632.37,6724.27,6808.37],"upper_2s":[1237.62,1253.1,1272.72,1290.93,1308.81,1325.18,1344.74,1361.56,1378.58,1401.41,1418.94,1436.68,1456.59,1479.4,1497.9,1517.31,1537.65,1557.57,1577.05,1596.77,1616.74,1639.14,1664.81,1685.63,1706.71,1729.59,1756.67,1778.64,1801.68,1825.03,1850.31,1873.45,1896.88,1922.31,1952.41,1976.83,2001.55,2027.48,2059.23,2084.98,2112.0,2141.26,2169.96,2197.1,2224.58,2252.4,2289.7,2318.34,2347.33,2379.86,2417.12,2447.35,2480.16,2512.29,2548.23,2580.1,2612.37,2645.04,2686.45,2720.05,2754.07,2789.75,2824.64,2868.87,2907.32,2948.92,2985.8,3024.48,3062.31,3100.61,3150.55,3189.95,3229.85,3273.15,3314.08,3365.97,3412.61,3459.89,3503.16,3548.55,3592.93,3637.87,3688.27,3746.02,3792.87,3840.3,3903.9,3952.72,4002.16,4054.01,4113.83,4168.98,4221.12,4273.91,4327.36,4397.07,4452.06,4507.74,4570.2,4641.75,4699.8,4760.7,4826.66,4893.53,4954.73,5016.7,5083.95,5163.56,5228.13,5293.52,5362.1,5446.06,5514.17,5593.05,5670.55,5744.02,5815.85,5888.59,5970.18,6063.66,6139.49,6216.27,6296.81,6395.4,6475.39,6559.28,6656.07,6739.32,6829.66,6915.08,7001.56,7114.34,7203.32,7293.41,7387.9,7513.57,7607.54,7709.53,7823.29,7924.65,8023.76,8124.11,8225.71,8361.92,8466.5,8572.39,8683.45,8831.16,8941.61,9057.46,9182.95,9310.19,9426.63,9544.52,9663.89,9819.56,9942.37,10066.71,10201.66,10329.25,10495.63,10641.06,10788.5,10923.42],"lower_2s":[658.92,667.16,677.61,687.3,696.82,705.54,715.95,724.9,733.97,746.12,755.46,764.9,775.5,787.64,797.5,807.83,818.66,829.26,839.63,850.14,860.77,872.69,886.36,897.44,908.67,920.85,935.27,946.96,959.23,971.66,985.12,997.44,1009.92,1023.46,1039.48,1052.48,1065.64,1079.45,1096.35,1110.06,1124.45,1140.03,1155.31,1169.76,1184.39,1199.2,1219.06,1234.3,1249.74,1267.06,1286.9,1302.99,1320.46,1337.57,1356.7,1373.67,1390.85,1408.24,1430.29,1448.18,1466.29,1485.29,1503.86,1527.41,1547.89,1570.03,1589.67,1610.26,1630.4,1650.79,1677.38,1698.36,1719.6,1742.65,1764.45,1792.07,1816.9,1842.08,1865.12,1889.28,1912.91,1936.83,1963.67,1994.42,2019.36,2044.61,2078.47,2104.47,2130.78,2158.39,2190.24,2219.6,2247.36,2275.47,2303.93,2341.04,2370.32,2399.96,2433.21,2471.31,2502.22,2534.64,2569.76,2605.36,2637.95,2670.94,2706.74,2749.12,2783.51,2818.32,2854.83,2899.53,2935.79,2977.79,3019.05,3058.17,3096.41,3135.14,3178.58,3228.35,3268.72,3309.6,3352.48,3404.97,3447.56,3492.22,3543.75,3588.07,3636.17,3681.65,3727.69,3787.74,3835.11,3883.08,3933.39,4000.3,4050.32,4104.62,4165.19,4219.16,4271.92,4325.35,4379.44,4451.96,4507.64,4564.02,4623.15,4701.79,4760.59,4822.27,4889.09,4956.83,5018.82,5081.59,5145.14,5228.02,5293.41,5359.61,5431.46,5499.39,5587.97,5665.4,5743.89,5815.73],"sigma_dev":[0.627,0.818,0.616,0.225,0.141,-0.135,-0.923,-0.716,-0.384,-0.212,-0.533,-0.188,-0.88,-0.825,-1.233,-0.913,-1.232,-1.204,-1.048,-0.618,-0.509,-0.094,0.009,0.432,1.2,1.3,1.405,2.228,3.188,3.327,3.095,2.221,1.521,1.148,1.427,1.593,1.396,-0.115,-0.617,-0.194,-0.3,-0.488,-0.473,-0.125,0.111,-0.257,-0.036,0.104,0.057,0.159,0.33,0.256,0.323,0.184,0.476,0.572,0.682,0.755,0.678,0.984,0.777,1.188,1.123,0.799,0.429,0.489,0.281,-0.096,-0.008,-0.209,-0.284,-0.65,-0.841,-1.229,-0.928,-0.477,0.226,-0.925,-1.068,-0.758,-1.141,-1.39,-1.447,-1.555,-1.639,-1.268,-2.18,-1.68,-2.407,-2.32,-2.325,-2.083,-1.676,-1.704,-1.828,-1.798,-1.15,-1.445,-1.391,-1.053,-0.978,-0.75,-0.635,-0.451,-0.321,0.007,1.124,-0.014,-0.189,0.177,0.081,0.146,0.056,-0.409,0.185,0.218,0.072,0.144,-0.121,-0.488,-0.585,-0.491,-0.443,0.017,0.113,0.47,0.239,0.148,0.307,0.054,0.231,0.021,-0.075,-0.047,0.055,0.635,0.768,1.142,0.959,0.794,0.712,0.276,-0.184,0.621,0.732,0.893,0.351,0.447,0.4,-0.065,0.031,0.02,0.233,0.34,0.527,0.6,0.887,0.613,0.808,1.036,1.391,0.961,0.746,-0.04]}}}];
+var LN = DS.length;
+var rendered = new Array(LN).fill(false);
+
+function switchTab(idx) {
+  for (var i = 0; i <= LN; i++) {
+    var tc = document.getElementById('tab-' + i);
+    if (tc) tc.hidden = (i !== idx);
+  }
+  var btns = document.querySelectorAll('.tab-btn');
+  btns.forEach(function(b, j) { b.classList.toggle('active', j === idx); });
+  // render this index if first time
+  if (idx > 0 && idx <= LN && !rendered[idx - 1]) {
+    renderOne(idx - 1);
+    rendered[idx - 1] = true;
+  }
+  // resize canvases
+  setTimeout(function() {
+    for (var k = 0; k < LN; k++) {
+      if (rendered[k]) {
+        var mc = document.getElementById('mainChart-' + k);
+        var sc = document.getElementById('sigChart-' + k);
+        if (mc) drawMainChart(k, mc);
+        if (sc) drawSigChart(k, sc);
+      }
+    }
+  }, 100);
+}
+
+// ===== 渲染单个指数（KPI/指标/σ/insight）=====
+function renderOne(k) {
+  var D = DS[k].data, reg = D.regression, meta = D.meta;
+  var prefix = 'idx-' + k + '-';
+
+  // KPI
+  var sigEl = document.getElementById(prefix + 'sigma-val');
+  if (sigEl) {
+    sigEl.textContent = reg.current_sigma.toFixed(2) + '\u03c3';
+    sigEl.className = 'val ' + (reg.current_sigma >= 0 ? 'rise' : 'drop');
+  }
+
+  // Metrics table
+  var mBody = document.getElementById(prefix + 'metrics-body');
+  if (mBody) {
+    var order = ['基日以来', '过去10年', '过去5年', '过去3年', '过去1年'];
+    var sorted = order.map(function(p) { return D.metrics.find(function(r) { return r.period === p; }); }).filter(Boolean);
+    sorted.forEach(function(r) {
+      var dyn = r.sharpe_dynamic !== null ? r.sharpe_dynamic.toFixed(3) : 'N/A';
+      var rfNote = r.rf_mean !== null ? '(Rf均值' + r.rf_mean + '%)' : '';
+      var cagrCls = r.cagr >= 0 ? 'positive' : 'drop';
+      var s0 = r['sharpe_Rf=0'];
+      var s25 = r['sharpe_Rf=2.5%'];
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><strong style="color:#fff">' + r.period + '</strong></td>' +
+        '<td>' + r.start + '</td>' +
+        '<td class="num ' + (r.cagr > 0 ? 'positive' : 'drop') + '">' + r.cagr + '%</td>' +
+        '<td class="num">' + r.vol + '%</td>' +
+        '<td class="num">' + (typeof s0 === 'number' ? s0.toFixed(3) : s0) + '</td>' +
+        '<td class="num">' + (typeof s25 === 'number' ? s25.toFixed(3) : s25) + '</td>' +
+        '<td class="num">' + dyn + '<br><span style="font-size:9px;color:#888">' + rfNote + '</span></td>' +
+        '<td class="num dd">' + r.max_dd + '%</td>';
+      mBody.appendChild(tr);
+    });
+  }
+
+  // σ grid
+  var grid = document.getElementById(prefix + 'sigma-grid');
+  if (grid) {
+    var bands = reg.sigma_bands;
+    var cur = reg.current_close;
+    var ci = document.createElement('div');
+    ci.className = 'sigma-item cyan-bg';
+    ci.innerHTML = '<div class="s-label">当前点位</div><div class="s-price">' + cur + '</div><div class="s-pct">' + reg.current_sigma.toFixed(2) + '\u03c3</div>';
+    grid.appendChild(ci);
+    var items = [
+      { sigma: '0', cls: 'cyan-bg', lbl: '趋势中轨 (0\u03c3)' },
+      { sigma: '-0.5', cls: 'drop-light-bg', lbl: '-0.5\u03c3' },
+      { sigma: '-1', cls: 'drop-bg', lbl: '-1\u03c3 下轨' },
+      { sigma: '-1.5', cls: 'drop-deep-bg', lbl: '-1.5\u03c3' },
+      { sigma: '-2', cls: 'drop-deep-bg', lbl: '-2\u03c3' }
+    ];
+    items.forEach(function(it) {
+      var b = bands[it.sigma];
+      if (!b) return;
+      var el = document.createElement('div');
+      el.className = 'sigma-item ' + it.cls;
+      var pct = b.drop_pct;
+      var sgn = pct > 0 ? '+' : '';
+      el.innerHTML = '<div class="s-label">' + it.lbl + '</div><div class="s-price">' + b.price + '</div><div class="s-pct">' + sgn + pct + '%</div>';
+      grid.appendChild(el);
+    });
+  }
+
+  // Insight
+  var insight = document.getElementById(prefix + 'insight-body');
+  if (insight) {
+    var s = reg;
+    var sigSign = s.current_sigma > 0 ? '+' : '';
+    var sigChar = (s.current_sigma >= -0.5 && s.current_sigma <= 0.5) ? '中性' : (s.current_sigma > 0.5 ? '偏强' : '偏弱');
+    insight.innerHTML =
+      '对 log(price) 做线性回归，斜率=日增长率，年化CAGR=' + s.cagr_trend.toFixed(2) +
+      '%。R\u00b2=' + s.r_squared.toFixed(4) +
+      ' 说明指数走势可被指数增长曲线解释。残差\u03c3=' + s.std_log.toFixed(4) +
+      '（对数空间），\u2248' + s.std_pct.toFixed(2) + '%的价格偏离幅度。<br>' +
+      '<strong>当前 ' + Math.round(s.current_close) + ' 点 vs 趋势 ' + Math.round(s.current_trend) +
+      ' 点（' + sigSign + s.current_sigma.toFixed(2) + '\u03c3）</strong>，' + sigChar + '区间。' +
+      'R\u00b2=' + s.r_squared.toFixed(4) + ' 表示' + (s.r_squared > 0.9 ? '拟合度优秀' : '拟合度良好') + '。';
+  }
+}
+
+// ===== 主子图 =====
+function drawMainChart(k, canvas) {
+  var D = DS[k].data;
+  var cd = D.chart_data;
+  var n = cd.dates.length;
+  if (n < 2) return;
+  var wrap = canvas.parentElement;
+  var W = Math.max(wrap.clientWidth, 700);
+  var H = 420;
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+  var pad = { l: 60, r: 16, t: 26, b: 36 };
+  var cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  var cMin = Infinity, cMax = -Infinity;
+  for (var i = 0; i < n; i++) {
+    if (cd.close[i] < cMin) cMin = cd.close[i];
+    if (cd.close[i] > cMax) cMax = cd.close[i];
+    if (cd.upper_2s[i] > cMax) cMax = cd.upper_2s[i];
+    if (cd.lower_2s[i] < cMin) cMin = cd.lower_2s[i];
+  }
+  var minP = Math.floor(cMin / 100) * 100;
+  var maxP = Math.ceil(cMax / 1000) * 1000;
+  function yLog(v) {
+    v = Math.max(minP, Math.min(maxP, v));
+    return pad.t + ch * (1 - Math.log(v / minP) / Math.log(maxP / minP));
+  }
+  function xPos(i) { return pad.l + cw * i / Math.max(n - 1, 1); }
+
+  var yTicks = [];
+  for (var v = minP; v <= maxP; v *= 2) yTicks.push(v);
+  if (yTicks.length < 4) { var step = Math.ceil((maxP - minP) / 5); for (var v = minP; v <= maxP; v += step) yTicks.push(v); }
+  yTicks.sort(function(a, b) { return a - b; });
+  var uniq = []; yTicks.forEach(function(v) { if (uniq.length === 0 || uniq[uniq.length - 1] !== v) uniq.push(v); });
+
+  ctx.fillStyle = '#16213e'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.05)'; ctx.lineWidth = 0.5;
+  uniq.forEach(function(tv) {
+    var y = yLog(tv);
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#888'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(tv >= 1000 ? (tv / 1000) + 'k' : tv, pad.l - 5, y + 3);
+  });
+  ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillStyle = '#aaa'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('全收益点位 (对数刻度)', 0, 0); ctx.restore();
+
+  ctx.fillStyle = 'rgba(10,189,227,0.06)';
+  ctx.beginPath(); ctx.moveTo(xPos(0), yLog(cd.upper_2s[0]));
+  for (var i = 1; i < n; i++) ctx.lineTo(xPos(i), yLog(cd.upper_2s[i]));
+  for (var i = n - 1; i >= 0; i--) ctx.lineTo(xPos(i), yLog(cd.lower_2s[i]));
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = 'rgba(10,189,227,0.11)';
+  ctx.beginPath(); ctx.moveTo(xPos(0), yLog(cd.upper_1s[0]));
+  for (var i = 1; i < n; i++) ctx.lineTo(xPos(i), yLog(cd.upper_1s[i]));
+  for (var i = n - 1; i >= 0; i--) ctx.lineTo(xPos(i), yLog(cd.lower_1s[i]));
+  ctx.closePath(); ctx.fill();
+
+  ctx.strokeStyle = 'rgba(10,189,227,0.22)'; ctx.lineWidth = 0.7; ctx.setLineDash([4, 3]);
+  [cd.upper_2s, cd.lower_2s].forEach(function(arr) {
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) { i ? ctx.lineTo(xPos(i), yLog(arr[i])) : ctx.moveTo(xPos(i), yLog(arr[i])); }
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+
+  ctx.strokeStyle = 'rgba(10,189,227,0.45)'; ctx.lineWidth = 1;
+  [cd.upper_1s, cd.lower_1s].forEach(function(arr) {
+    ctx.beginPath();
+    for (var i = 0; i < n; i++) { i ? ctx.lineTo(xPos(i), yLog(arr[i])) : ctx.moveTo(xPos(i), yLog(arr[i])); }
+    ctx.stroke();
+  });
+
+  ctx.strokeStyle = '#0abde3'; ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  for (var i = 0; i < n; i++) { i ? ctx.lineTo(xPos(i), yLog(cd.trend[i])) : ctx.moveTo(xPos(i), yLog(cd.trend[i])); }
+  ctx.stroke();
+
+  ctx.strokeStyle = '#ee5a24'; ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  for (var i = 0; i < n; i++) { i ? ctx.lineTo(xPos(i), yLog(cd.close[i])) : ctx.moveTo(xPos(i), yLog(cd.close[i])); }
+  ctx.stroke();
+
+  var lx = xPos(n - 1), ly = yLog(cd.close[n - 1]);
+  ctx.fillStyle = '#ee5a24'; ctx.beginPath(); ctx.arc(lx, ly, 4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(cd.close[n - 1].toLocaleString(), lx + 6, ly - 5);
+  ctx.fillStyle = '#aaa'; ctx.font = '9px sans-serif';
+  ctx.fillText(D.regression.current_sigma.toFixed(2) + '\u03c3', lx + 6, ly + 9);
+
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'right';
+  ctx.fillText(D.meta.name + ' \u00b7 CAGR ' + D.regression.cagr_trend + '% \u00b7 R\u00b2=' + D.regression.r_squared, W - pad.r, pad.t - 8);
+
+  ctx.fillStyle = '#888'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';
+  var stepD = Math.max(1, Math.ceil(n / 15));
+  for (var i = 0; i < n; i += stepD) ctx.fillText(cd.dates[i].substring(0, 7), xPos(i), H - 6);
+}
+
+function drawSigChart(k, canvas) {
+  var D = DS[k].data;
+  var cd = D.chart_data;
+  var n = cd.dates.length;
+  if (n < 2) return;
+  var wrap = canvas.parentElement;
+  var W = Math.max(wrap.clientWidth, 700);
+  var H = 180;
+  canvas.width = W * 2; canvas.height = H * 2;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  var ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
+  var pad = { l: 55, r: 16, t: 22, b: 32 };
+  var cw = W - pad.l - pad.r, ch = H - pad.t - pad.b;
+  var sMin = -2.5, sMax = 3.5;
+  function ySig(v) { return pad.t + ch * (1 - (v - sMin) / (sMax - sMin)); }
+  function xBar(i) { return pad.l + cw * i / n + cw / (2 * n); }
+
+  ctx.fillStyle = '#16213e'; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(pad.l, ySig(0)); ctx.lineTo(W - pad.r, ySig(0)); ctx.stroke();
+  [2, 1, -1, -2].forEach(function(v) {
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(pad.l, ySig(v)); ctx.lineTo(W - pad.r, ySig(v)); ctx.stroke();
+    ctx.fillStyle = '#666'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(v + '\u03c3', pad.l - 4, ySig(v) + 3);
+  });
+
+  var bw = Math.max(1, cw / n - 0.5);
+  for (var i = 0; i < n; i++) {
+    var sv = cd.sigma_dev[i];
+    var y0 = ySig(0), yv = ySig(sv);
+    if (sv > 1) ctx.fillStyle = '#ee5a24';
+    else if (sv > 0.5) ctx.fillStyle = '#ff9f43';
+    else if (sv > 0) ctx.fillStyle = '#e74c3c';
+    else if (sv > -0.5) ctx.fillStyle = '#888';
+    else if (sv > -1) ctx.fillStyle = '#2ecc71';
+    else if (sv > -2) ctx.fillStyle = '#27ae60';
+    else ctx.fillStyle = '#1e8449';
+    ctx.fillRect(xBar(i) - bw / 2, Math.min(y0, yv), bw, Math.abs(yv - y0));
+  }
+
+  ctx.fillStyle = '#888'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+  var stepD = Math.max(1, Math.ceil(n / 15));
+  for (var i = 0; i < n; i += stepD) ctx.fillText(cd.dates[i].substring(0, 7), xBar(i), H - 5);
+}
+
+// Init: render summary tab and first index tab
+document.addEventListener('DOMContentLoaded', function() {
+  switchTab(0); // show summary
+  // pre-render first 2 charts
+  setTimeout(function() { switchTab(1); switchTab(0); }, 200);
+});
+
+window.addEventListener('resize', function() {
+  for (var k = 0; k < LN; k++) {
+    if (rendered[k]) {
+      var mc = document.getElementById('mainChart-' + k);
+      var sc = document.getElementById('sigChart-' + k);
+      if (mc) drawMainChart(k, mc);
+      if (sc) drawSigChart(k, sc);
+    }
+  }
+});
+</script>
+</body>
+</html>
