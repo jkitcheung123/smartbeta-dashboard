@@ -726,8 +726,11 @@ function drawMainChart(k, canvas) {
     if (cd.upper_2s[i] > cMax) cMax = cd.upper_2s[i];
     if (cd.lower_2s[i] < cMin) cMin = cd.lower_2s[i];
   }
-  var minP = Math.floor(cMin / 100) * 100;
-  var maxP = Math.ceil(cMax / 1000) * 1000;
+  // 防止极小值被 floor 到 0 导致 log(0) = NaN
+  var cMinFloor = cMin < 10 ? 1 : (cMin < 100 ? Math.floor(cMin / 10) * 10 : Math.floor(cMin / 100) * 100);
+  var cMaxCeil = cMax < 10 ? 10 : (cMax < 100 ? Math.ceil(cMax / 10) * 10 : Math.ceil(cMax / 1000) * 1000);
+  var minP = Math.max(0.1, cMinFloor);
+  var maxP = cMaxCeil;
   function yLog(v) {
     v = Math.max(minP, Math.min(maxP, v));
     return pad.t + ch * (1 - Math.log(v / minP) / Math.log(maxP / minP));
