@@ -9,25 +9,27 @@
 body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f0f2f5;color:#2d3748;padding:12px 16px;min-height:100vh}
 h1{font-size:18px;font-weight:700;color:#1a202c;margin-bottom:2px}
 .sub{font-size:11px;color:#718096;margin-bottom:10px}
-.tabs{display:flex;gap:1px;border-bottom:2px solid #3182ce;margin-bottom:0;overflow-x:auto}
-.tab-btn{padding:7px 14px;font-size:11.5px;font-weight:600;color:#4a5568;background:#e8ecf1;border:none;cursor:pointer;border-radius:7px 7px 0 0;transition:all .2s;white-space:nowrap;flex-shrink:0}
+.tabs{display:flex;gap:1px;border-bottom:2px solid #3182ce;margin-bottom:8px;overflow-x:auto}
+.tab-btn{padding:8px 14px;font-size:11.5px;font-weight:600;color:#4a5568;background:#e8ecf1;border:none;cursor:pointer;border-radius:8px 8px 0 0;transition:all .2s;white-space:nowrap;flex-shrink:0;position:relative}
 .tab-btn:hover{color:#1a202c;background:#dde2e8}
-.tab-btn.active{color:#3182ce;background:#f0f2f5;border-bottom:2px solid #3182ce;margin-bottom:-2px}
+.tab-btn.active{color:#fff;background:#3182ce;border-bottom:2px solid #3182ce;margin-bottom:-2px;box-shadow:0 2px 6px rgba(49,130,206,0.3)}
 .tab-content{display:block}
 .tab-content[hidden]{display:none}
 .comp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;table-layout:fixed;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
-.comp-table th{background:#edf2f7;color:#4a5568;font-weight:600;padding:7px 6px;text-align:center;position:sticky;top:0;font-size:11px;overflow:hidden;text-overflow:ellipsis}
-.comp-table td{padding:6px 6px;border-bottom:1px solid #e2e8f0;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;color:#2d3748}
-.comp-table tr:hover{background:rgba(49,130,206,0.04)}
+.comp-table th{background:#edf2f7;color:#4a5568;font-weight:600;padding:8px 7px;text-align:center;position:sticky;top:0;font-size:11px;overflow:hidden;text-overflow:ellipsis;border-bottom:2px solid #cbd5e0}
+.comp-table td{padding:7px 6px;border-bottom:1px solid #e2e8f0;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;color:#2d3748}
+.comp-table tr:hover{background:rgba(49,130,206,0.06)}
+.comp-table tr:last-child td{border-bottom:none}
 .comp-table .num{text-align:right;font-variant-numeric:tabular-nums}
 .idx-name{font-weight:600;color:#1a202c;font-size:12px}
 .idx-code{font-size:10px;color:#a0aec0;margin-top:1px}
-.positive{color:#e53e3e;font-weight:500} .drop{color:#38a169;font-weight:500} .neutral{color:#a0aec0}
+.positive{color:#e53e3e;font-weight:600} .drop{color:#38a169;font-weight:600} .neutral{color:#a0aec0}
 .rise{color:#e53e3e;font-weight:500}
 .btn-detail{background:#3182ce;color:#fff;border:none;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;transition:all .15s;font-weight:500}
 .btn-detail:hover{background:#2b6cb0;box-shadow:0 2px 6px rgba(49,130,206,0.25)}
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
-.kpi{background:#fff;border-radius:8px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:1px solid #e2e8f0}
+.kpi{background:#fff;border-radius:8px;padding:10px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.06);border:1px solid #e2e8f0;border-top:3px solid #3182ce;transition:box-shadow .15s}
+.kpi:hover{box-shadow:0 3px 10px rgba(0,0,0,0.08)}
 .kpi .lbl{font-size:10px;color:#718096;margin-bottom:1px}
 .kpi .val{font-size:18px;font-weight:700;color:#1a202c}
 .kpi .val.rise{color:#e53e3e}
@@ -35,8 +37,8 @@ h1{font-size:18px;font-weight:700;color:#1a202c;margin-bottom:2px}
 .kpi .val.drop{color:#38a169}
 .kpi .val.amber{color:#dd6b20}
 .kpi .val2{font-size:9px;color:#a0aec0;margin-top:1px}
-.section{background:#fff;border-radius:8px;padding:14px 16px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:1px solid #e2e8f0}
-.section h3{font-size:13px;font-weight:600;color:#1a202c;margin-bottom:8px}
+.section{background:#fff;border-radius:8px;padding:14px 16px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,0.05);border:1px solid #e2e8f0;border-left:4px solid #3182ce}
+.section h3{font-size:13px;font-weight:600;color:#2b6cb0;margin-bottom:8px}
 .section p{font-size:12px;line-height:1.8;color:#4a5568}
 .section strong{color:#dd6b20}
 table{width:100%;border-collapse:collapse;font-size:11px;margin-top:4px}
@@ -44,29 +46,34 @@ th{background:#edf2f7;color:#4a5568;font-weight:600;padding:6px 7px;text-align:l
 td{padding:6px 7px;border-bottom:1px solid #e2e8f0;color:#2d3748}
 tr:last-child td{border-bottom:none}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.dd{color:#38a169;font-weight:500}
-.above{color:#e53e3e;font-weight:500} .below{color:#38a169;font-weight:500}
+.dd{color:#38a169;font-weight:600}
+.above{color:#e53e3e;font-weight:600} .below{color:#38a169;font-weight:600}
 .sigma-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .sigma-item{border-radius:6px;padding:8px 10px;display:flex;flex-direction:column}
 .sigma-item .s-label{font-size:10px;color:#718096}
 .sigma-item .s-price{font-size:14px;font-weight:600;color:#1a202c}
 .sigma-item .s-pct{font-size:10px;font-weight:500}
-.sigma-item.cyan-bg{background:rgba(49,130,206,0.08);border:1px solid rgba(49,130,206,0.20)}
-.sigma-item.cyan-bg .s-pct{color:#3182ce}
-.sigma-item.neutral-bg{background:#f7fafc;border:1px solid #e2e8f0}
-.sigma-item.neutral-bg .s-pct{color:#a0aec0}
-.sigma-item.rise-bg{background:rgba(229,62,62,0.08);border:1px solid rgba(229,62,62,0.20)}
-.sigma-item.rise-bg .s-pct{color:#e53e3e}
-.sigma-item.drop-light-bg{background:rgba(56,161,105,0.07);border:1px solid rgba(56,161,105,0.16)}
-.sigma-item.drop-light-bg .s-pct{color:#38a169}
-.sigma-item.drop-bg{background:rgba(38,132,70,0.09);border:1px solid rgba(38,132,70,0.20)}
-.sigma-item.drop-bg .s-pct{color:#268246}
-.sigma-item.drop-deep-bg{background:rgba(30,100,50,0.10);border:1px solid rgba(30,100,50,0.22)}
-.sigma-item.drop-deep-bg .s-pct{color:#1e6432}
+.sigma-item.cyan-bg{background:rgba(49,130,206,0.15);border:1px solid rgba(49,130,206,0.30);border-left:3px solid #3182ce}
+.sigma-item.cyan-bg .s-pct{color:#3182ce}.sigma-item.cyan-bg .s-price{color:#3182ce}
+.sigma-item.neutral-bg{background:#f7fafc;border:1px solid #e2e8f0;border-left:3px solid #cbd5e0}
+.sigma-item.neutral-bg .s-pct{color:#a0aec0}.sigma-item.neutral-bg .s-price{color:#4a5568}
+.sigma-item.rise-bg{background:rgba(229,62,62,0.15);border:1px solid rgba(229,62,62,0.30);border-left:3px solid #e53e3e}
+.sigma-item.rise-bg .s-pct{color:#e53e3e}.sigma-item.rise-bg .s-price{color:#e53e3e}
+.sigma-item.drop-light-bg{background:rgba(56,161,105,0.14);border:1px solid rgba(56,161,105,0.26);border-left:3px solid #38a169}
+.sigma-item.drop-light-bg .s-pct{color:#38a169}.sigma-item.drop-light-bg .s-price{color:#38a169}
+.sigma-item.drop-bg{background:rgba(38,132,70,0.16);border:1px solid rgba(38,132,70,0.28);border-left:3px solid #2f855a}
+.sigma-item.drop-bg .s-pct{color:#2f855a}.sigma-item.drop-bg .s-price{color:#2f855a}
+.sigma-item.drop-deep-bg{background:rgba(30,100,50,0.18);border:1px solid rgba(30,100,50,0.30);border-left:3px solid #276749}
+.sigma-item.drop-deep-bg .s-pct{color:#276749}.sigma-item.drop-deep-bg .s-price{color:#276749}
 .extremes{display:flex;gap:10px;margin-top:10px}
-.extreme{flex:1;padding:8px 10px;border-radius:6px;font-size:11px;background:#f7fafc;border:1px solid #e2e8f0}
+.extreme{flex:1;padding:10px 12px;border-radius:6px;font-size:11px;border:1px solid #e2e8f0}
+.extreme.max{background:rgba(229,62,62,0.06);border-left:3px solid #e53e3e}
+.extreme.min{background:rgba(56,161,105,0.06);border-left:3px solid #38a169}
 .extreme .ev-lbl{font-size:10px;color:#718096}
-.extreme .ev-val{font-size:15px;font-weight:700;margin-top:1px;color:#1a202c}
+.extreme .ev-val{font-size:15px;font-weight:700;margin-top:2px}
+.extreme.max .ev-val{color:#e53e3e}
+.extreme.min .ev-val{color:#38a169}
+.extreme .ev-date{font-size:10px;color:#a0aec0;margin-top:2px}
 .chart-wrap{width:100%;height:420px;margin-top:8px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
 .chart-wrap canvas{width:100%!important;display:block}
 .sig-chart{width:100%;height:180px;margin-top:8px;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)}
@@ -189,8 +196,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">7909.3</strong> 点 · 趋势中轨 <strong style="color:#3182ce">8187.77</strong> 点 · 1σ ≈ 14.82% 价格偏差</p>
   <div class="sigma-grid" id="idx-0-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+3.54σ</div><div style="font-size:10px;color:#a0aec0">2015-06-12</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-2.27σ</div><div style="font-size:10px;color:#a0aec0">2014-03-10</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+3.54σ</div><div class="ev-date">2015-06-12</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-2.27σ</div><div class="ev-date">2014-03-10</div></div>
   </div>
 </div>
 
@@ -285,8 +292,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">8030.44</strong> 点 · 趋势中轨 <strong style="color:#3182ce">8084.01</strong> 点 · 1σ ≈ 12.67% 价格偏差</p>
   <div class="sigma-grid" id="idx-1-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+4.12σ</div><div style="font-size:10px;color:#a0aec0">2015-06-12</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-2.4σ</div><div style="font-size:10px;color:#a0aec0">2020-03-23</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+4.12σ</div><div class="ev-date">2015-06-12</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-2.4σ</div><div class="ev-date">2020-03-23</div></div>
   </div>
 </div>
 
@@ -379,8 +386,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">6544.4</strong> 点 · 趋势中轨 <strong style="color:#3182ce">7934.68</strong> 点 · 1σ ≈ 16.15% 价格偏差</p>
   <div class="sigma-grid" id="idx-2-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+2.38σ</div><div style="font-size:10px;color:#a0aec0">2015-06-12</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-2.55σ</div><div style="font-size:10px;color:#a0aec0">2014-05-19</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+2.38σ</div><div class="ev-date">2015-06-12</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-2.55σ</div><div class="ev-date">2014-05-19</div></div>
   </div>
 </div>
 
@@ -471,8 +478,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">7591.78</strong> 点 · 趋势中轨 <strong style="color:#3182ce">8084.77</strong> 点 · 1σ ≈ 17.02% 价格偏差</p>
   <div class="sigma-grid" id="idx-3-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+4.4σ</div><div style="font-size:10px;color:#a0aec0">2015-06-12</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-2.6σ</div><div style="font-size:10px;color:#a0aec0">2020-03-23</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+4.4σ</div><div class="ev-date">2015-06-12</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-2.6σ</div><div class="ev-date">2020-03-23</div></div>
   </div>
 </div>
 
@@ -565,8 +572,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">743.29</strong> 点 · 趋势中轨 <strong style="color:#3182ce">576.56</strong> 点 · 1σ ≈ 18.31% 价格偏差</p>
   <div class="sigma-grid" id="idx-4-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+1.71σ</div><div style="font-size:10px;color:#a0aec0">2007-05-31</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-3.06σ</div><div style="font-size:10px;color:#a0aec0">2009-02-27</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+1.71σ</div><div class="ev-date">2007-05-31</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-3.06σ</div><div class="ev-date">2009-02-27</div></div>
   </div>
 </div>
 
@@ -630,8 +637,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">7680.73</strong> 点 · 趋势中轨 <strong style="color:#3182ce">8774.82</strong> 点 · 1σ ≈ 37.38% 价格偏差</p>
   <div class="sigma-grid" id="idx-5-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+2.74σ</div><div style="font-size:10px;color:#a0aec0">2008-01-14</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-2.99σ</div><div style="font-size:10px;color:#a0aec0">2005-07-18</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+2.74σ</div><div class="ev-date">2008-01-14</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-2.99σ</div><div class="ev-date">2005-07-18</div></div>
   </div>
 </div>
 
@@ -701,8 +708,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">76.69</strong> 点 · 趋势中轨 <strong style="color:#3182ce">71.89</strong> 点 · 1σ ≈ 5.99% 价格偏差</p>
   <div class="sigma-grid" id="idx-6-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+2.62σ</div><div style="font-size:10px;color:#a0aec0">2021-12-31</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-3.45σ</div><div style="font-size:10px;color:#a0aec0">2020-03-31</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+2.62σ</div><div class="ev-date">2021-12-31</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-3.45σ</div><div class="ev-date">2020-03-31</div></div>
   </div>
 </div>
 
@@ -772,8 +779,8 @@ tr:last-child td{border-bottom:none}
   <p style="font-size:11px;color:#718096;margin-bottom:4px">当前 <strong style="color:#3182ce">64.68</strong> 点 · 趋势中轨 <strong style="color:#3182ce">66.06</strong> 点 · 1σ ≈ 9.98% 价格偏差</p>
   <div class="sigma-grid" id="idx-7-sigma-grid"></div>
   <div class="extremes">
-    <div class="extreme"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val" style="color:#e53e3e">+1.69σ</div><div style="font-size:10px;color:#a0aec0">2022-03-31</div></div>
-    <div class="extreme"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val" style="color:#38a169">-3.89σ</div><div style="font-size:10px;color:#a0aec0">2020-03-31</div></div>
+    <div class="extreme max"><div class="ev-lbl">历史最高σ偏离（上涨极值）</div><div class="ev-val">+1.69σ</div><div class="ev-date">2022-03-31</div></div>
+    <div class="extreme min"><div class="ev-lbl">历史最低σ偏离（下跌极值）</div><div class="ev-val">-3.89σ</div><div class="ev-date">2020-03-31</div></div>
   </div>
 </div>
 
